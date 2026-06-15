@@ -1,0 +1,83 @@
+/* Make Storybook content area scrollable */
+#storybook-root {
+    height: 100vh;
+    overflow: auto;
+}
+
+/* Make the story container scrollable */
+.os-host,
+.os-content,
+[data-story-container] {
+    height: 100% !important;
+    overflow: auto !important;
+}
+
+/* Make the docs container scrollable */
+.sbdocs-wrapper {
+    height: 100vh;
+    overflow: auto;
+}
+
+/* Ensure story content can scroll */
+.sb-story {
+    min-height: 100%;
+    padding: 1rem;
+}
+
+/* Apply theme to entire Storybook UI */
+html.dark-mode {
+    color-scheme: dark;
+}
+
+html:not(.dark-mode) {
+    color-scheme: light;
+}
+
+/* Make Storybook UI elements respond to dark mode */
+html.dark-mode [data-side="left"],
+html.dark-mode [data-side="top"],
+html.dark-mode .os-host,
+html.dark-mode .os-content {
+    background-color: #1a1a1a;
+    color: #e5e5e5;
+}
+
+html:not(.dark-mode) [data-side="left"],
+html:not(.dark-mode) [data-side="top"],
+html:not(.dark-mode) .os-host,
+html:not(.dark-mode) .os-content {
+    background-color: #ffffff;
+    color: #1a1a1a;
+}
+
+/* Make Storybook preview area respond to dark mode */
+html.dark-mode [data-panel-id="storybook-panel-root"],
+html.dark-mode [data-panel-id="storybook-panel-root"] > div,
+html.dark-mode .os-host,
+html.dark-mode .os-content,
+html.dark-mode [data-side="bottom"],
+html.dark-mode .sb-story,
+html.dark-mode #storybook-root > div > div:last-child {
+    background-color: var(--color-bg-primary, #0c0e12) !important;
+    color: var(--color-fg-primary, #ffffff) !important;
+}
+
+html:not(.dark-mode) [data-panel-id="storybook-panel-root"],
+html:not(.dark-mode) [data-panel-id="storybook-panel-root"] > div,
+html:not(.dark-mode) .os-host,
+html:not(.dark-mode) .os-content,
+html:not(.dark-mode) [data-side="bottom"],
+html:not(.dark-mode) .sb-story,
+html:not(.dark-mode) #storybook-root > div > div:last-child {
+    background-color: var(--color-bg-primary, #ffffff) !important;
+    color: var(--color-fg-primary, #1a1a1a) !important;
+}
+
+/* Target the main preview container */
+html.dark-mode [data-panel-id="storybook-panel-root"] [data-panel-id="storybook-panel-root"] {
+    background-color: var(--color-bg-primary, #0c0e12) !important;
+}
+
+html:not(.dark-mode) [data-panel-id="storybook-panel-root"] [data-panel-id="storybook-panel-root"] {
+    background-color: var(--color-bg-primary, #ffffff) !important;
+}
