@@ -47,7 +47,7 @@ export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
                             <CloseIcon className="size-6" />
                         </AriaButton>
 
-                        <AriaModal className="w-full cursor-auto will-change-transform">
+                        <AriaModal isDismissable className="w-full cursor-auto will-change-transform">
                             <AriaDialog className="h-dvh outline-hidden focus:outline-hidden">{children}</AriaDialog>
                         </AriaModal>
                     </>
