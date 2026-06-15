@@ -1,56 +1,107 @@
-# Untitled UI starter kit for Next.js
+# Landlord2Landlord (L2L) CMS
 
-This is an official Untitled UI starter kit for Next.js. Kickstart your Untitled UI project with Next.js in seconds.
+A premium portfolio management and lead triage Content Management System (CMS) designed specifically for Landlord-to-Landlord (L2L) transactions and operations. This application acts as the control panel for listing properties, triaging incoming investor leads, and monitoring key portfolio health metrics.
 
-## Untitled UI React
+---
 
-[Untitled UI React](https://www.untitledui.com/react) is the world’s largest collection of open-source React UI components. Everything you need to design and develop modern, beautiful interfaces—fast.
+## 🚀 Key Features
 
-Built with React 19.1, Tailwind CSS v4.1, TypeScript 5.8, and React Aria, Untitled UI React components deliver modern performance, type safety, and maintainability.
+### 📊 Dynamic Dashboard Overview (`/dashboard`)
+*   **Live Portfolio Metrics:**
+    *   **Total Properties:** Cumulative catalog metrics with Month-over-Month (MoM) listing activity.
+    *   **Active Leads:** Triage counts with status-based filters.
+    *   **Avg. Monthly Rent:** Formatted in British Pounds (GBP / `£`) with cohort pricing shifts.
+    *   **Conversion Rate:** Triage efficiency trends (Closed leads / total submissions).
+    *   *Skeletons:* Full loading states using animated pulses block-by-block.
+*   **Activity Feed:** Chronological activity stream tracking lead submissions, listings, and updates with relative humanized durations (e.g., "Just now", "2 mins ago", "Yesterday").
+*   **Quick Actions Panel:** Convenient pathways to add new listings or view leads.
+*   **System Status Widget:** Live service connection indicators optimized with custom styling for both light and dark modes.
 
-[Learn more](https://www.untitledui.com/react) • [Documentation](https://www.untitledui.com/react/docs/introduction) • [Figma](https://www.untitledui.com/figma) • [FAQs](https://www.untitledui.com/faqs)
+### 🏢 Property Listings Management (`/dashboard/properties`)
+*   **Live Table View:** Real-time property database query leveraging `React Aria Table` collections. Fully responsive layout with scroll containers for mobile screens.
+*   **Property Filters:** Search listings dynamically by location and filter by status.
+*   **Listing Management:** Form templates to create (`/properties/new`) and edit (`/properties/[id]/edit`) listings including bedrooms, bathrooms, rent yields, locations, epc status, and tenure parameters.
+*   **Image Galleries:** Integrated base64 image uploads synced with Cloudinary.
 
-## Getting started
+### 👥 Leads Triage System (`/dashboard/leads`)
+*   **Triage Table:** Manage captured leads by source/type (Property Enquiries, Mortgage Leads, Valuations, Insurance, General).
+*   **Triage Workflow:** Interactive dropdown selections to update statuses on the fly (New, Contacted, Qualified, Viewing Scheduled, Negotiating, Closed).
+*   **Lead Search:** Filter down results instantly by email or lead properties.
 
-First, run the development server:
+### 🌗 Dark & Light Theme Support
+*   Universal dark mode theme using `next-themes`.
+*   Pulsing loaders, sidebar controls, page headers, tables, badges, and preloaders respect class settings dynamically.
+
+---
+
+## 🛠️ Technology Stack
+
+*   **Framework:** [Next.js 15 (App Router)](https://nextjs.org/) utilizing turbopack dev bundling.
+*   **Styling:** [Tailwind CSS v4](https://tailwindcss.com/) with native class variables for flexible theme styles.
+*   **UI System:** [React Aria](https://react-spectrum.adobe.com/react-aria/) and [React Aria Components](https://react-spectrum.adobe.com/react-aria/react-aria-components.html) for fully accessible, highly interactive UI components.
+*   **Data Fetching:** [TanStack React Query v5](https://tanstack.com/query/latest) for server-state caching, automatic refetches, and loading transitions.
+*   **API Client:** [Axios](https://axios-http.com/) configured with interceptors and base token storage for authentication.
+*   **Icons:** [Untitled UI Icons](https://www.untitledui.com/icons) for clean modern design indicators.
+
+---
+
+## 📁 Project Structure
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+landlord-cms/
+├── public/                 # Static assets (logo.svg, branding icons)
+├── src/
+│   ├── app/                # Next.js page routers & layouts
+│   │   ├── auth/           # Login flows
+│   │   └── dashboard/      # Metrics, Properties list, and Leads triage pages
+│   ├── components/         # React components (modals, tables, navigation, metrics)
+│   │   ├── application/    # Feature components (activity feed, table, page headers)
+│   │   ├── base/           # Base inputs, dropdowns, buttons
+│   │   └── foundations/    # Logos, featured icons
+│   ├── contexts/           # Authentication state context providers
+│   ├── lib/
+│   │   ├── api/            # API wrappers (properties, leads, stats, activities hooks)
+│   │   └── utils/          # Storage utilities
+│   ├── providers/          # Theme and Query Client provider setup
+│   └── styles/             # Global CSS files and Tailwind configurations
+├── package.json            # Scripts and project dependencies
+└── tsconfig.json           # TypeScript configuration
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 💻 Getting Started
 
-## Resources
+### 1. Prerequisites
+Ensure you have Node.js and a package manager (npm, yarn, pnpm, or bun) installed.
 
-Untitled UI React is built on top of [Untitled UI Figma](https://www.untitledui.com/figma), the world's largest and most popular Figma UI kit and design system. Explore more:
+### 2. Configure Environment Variables
+Create a `.env` file in the root of the CMS project:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000/api
+```
+*(Adjust the API URL based on where your `landlord-backend` is running).*
 
-**[Untitled UI Figma:](https://www.untitledui.com/react/resources/figma-files)** The world's largest Figma UI kit and design system.
-<br/>
-**[Untitled UI Icons:](https://www.untitledui.com/react/resources/icons)** A clean, consistent, and neutral icon library crafted specifically for modern UI design.
-<br/>
-**[Untitled UI file icons:](https://www.untitledui.com/react/resources/file-icons)** Free file format icons, designed specifically for modern web and UI design.
-<br/>
-**[Untitled UI flag icons:](https://www.untitledui.com/react/resources/flag-icons)** Free country flag icons, designed specifically for modern web and UI design.
-<br/>
-**[Untitled UI avatars:](https://www.untitledui.com/react/resources/avatars)** Free placeholder user avatars and profile pictures to use in your projects.
-<br/>
-**[Untitled UI logos:](https://www.untitledui.com/react/resources/logos)** Free fictional company logos to use in your projects.
+### 3. Install Dependencies
+```bash
+npm install
+```
 
-## License
+### 4. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Untitled UI React open-source components are licensed under the MIT license, which means you can use them for free in unlimited commercial projects.
+### 5. Build for Production
+To build the production-ready bundle:
+```bash
+npm run build
+npm run start
+```
 
-> [!NOTE]
-> This license applies only to the starter kit and to the components included in this open-source repository. [Untitled UI React PRO](https://www.untitledui.com/react) includes hundreds more advanced UI components and page examples and is subject to a separate [license agreement](https://www.untitledui.com/license).
-
-[Untitled UI license agreement →](https://www.untitledui.com/license)
-
-[Frequently asked questions →](https://www.untitledui.com/faqs)
+### 6. Storybook (UI Playbook)
+To run Storybook and preview individual design components:
+```bash
+npm run storybook
+```
