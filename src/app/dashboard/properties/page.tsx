@@ -13,6 +13,7 @@ import {
     Trash01,
     Eye,
     Building02,
+    Settings01,
 } from "@untitledui/icons";
 import { usePathname } from "next/navigation";
 import { SidebarNavigationDefault } from "@/components/application/app-navigation/sidebar-navigation/sidebar-default";
@@ -53,6 +54,7 @@ const mainNavSections: Array<{ label: string; items: NavItemType[] }> = [
             { label: "Dashboard", href: "/dashboard", icon: HomeLine },
             { label: "Properties", href: "/dashboard/properties", icon: Building01 },
             { label: "Leads", href: "/dashboard/leads", icon: Users01 },
+            { label: "Settings", href: "/dashboard/settings", icon: Settings01 },
         ],
     },
 ];

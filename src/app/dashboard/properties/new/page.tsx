@@ -16,6 +16,7 @@ import {
     HomeLine,
     Trash01,
     Plus,
+    Settings01,
 } from "@untitledui/icons";
 
 import { useCreateProperty, useUploadPropertyImages } from "@/lib/api/properties";

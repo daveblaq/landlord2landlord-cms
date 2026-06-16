@@ -16,6 +16,7 @@ import {
     Trash01,
     Plus,
     Building02,
+    Settings01,
 } from "@untitledui/icons";
 
 import { useProperty, useUpdateProperty, useUploadPropertyImages, type Property } from "@/lib/api/properties";
@@ -163,6 +164,7 @@ const mainNavSections = [
             { label: "Dashboard", href: "/dashboard", icon: HomeLine },
             { label: "Properties", href: "/dashboard/properties", icon: Building01 },
             { label: "Leads", href: "/dashboard/leads", icon: Users01 },
+            { label: "Settings", href: "/dashboard/settings", icon: Settings01 },
         ],
     },
 ];

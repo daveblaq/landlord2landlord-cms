@@ -18,6 +18,7 @@ export interface User {
     fullname: string;
     username: string;
     email: string;
+    country: string;
     role: UserRole;
     isEmailVerified: boolean;
     status: boolean;

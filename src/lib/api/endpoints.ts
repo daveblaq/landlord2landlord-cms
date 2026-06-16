@@ -6,6 +6,8 @@ export const API_ENDPOINTS = {
         LOGIN: '/auth/login',
         ME: '/auth/me',
         LOGOUT: '/auth/logout',
+        UPDATE_PROFILE: '/auth/profile',
+        CHANGE_PASSWORD: '/auth/change-password',
     },
     // Properties
     PROPERTIES: {
