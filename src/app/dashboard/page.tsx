@@ -267,17 +267,6 @@ export default function DashboardPage() {
                                         </a>
                                     ))}
                                 </div>
-
-                                {/* System Status */}
-                                <div className="mx-5 mb-5 rounded-lg bg-success-50 p-4 ring-1 ring-success-200 ring-inset dark:bg-success-950/20 dark:ring-success-900/30">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <div className="h-2 w-2 rounded-full bg-success-500 animate-pulse" />
-                                        <p className="text-sm font-semibold text-success-700 dark:text-success-300">System Online</p>
-                                    </div>
-                                    <p className="text-xs text-success-600 dark:text-success-400">
-                                        All services are running normally.
-                                    </p>
-                                </div>
                             </div>
                         </section>
                     </div>

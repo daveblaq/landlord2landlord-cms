@@ -454,14 +454,16 @@ export default function NewPropertyPage() {
                                     name="description"
                                     control={control}
                                     render={({ field, fieldState: { error } }) => (
-                                        <TextArea
-                                            {...field}
-                                            label="Description"
-                                            placeholder="Provide detailed information about the property, area, and investment highlights..."
-                                            rows={5}
-                                            isInvalid={!!error}
-                                            hint={error?.message}
-                                        />
+                                        <div className="overflow-hidden rounded-lg">
+                                            <TextArea
+                                                {...field}
+                                                label="Description"
+                                                placeholder="Provide detailed information about the property, area, and investment highlights..."
+                                                rows={5}
+                                                isInvalid={!!error}
+                                                hint={error?.message}
+                                            />
+                                        </div>
                                     )}
                                 />
 
@@ -923,19 +925,6 @@ export default function NewPropertyPage() {
                                             value={field.value ?? ""}
                                             isInvalid={!!error}
                                             hint={error?.message}
-                                        />
-                                    )}
-                                />
-
-                                <Controller
-                                    name="displayOnHomepage"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <Toggle
-                                            isSelected={field.value}
-                                            onChange={field.onChange}
-                                            label="Feature on Homepage"
-                                            hint="Show this listing on the public marketplace frontpage."
                                         />
                                     )}
                                 />

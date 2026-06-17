@@ -7,7 +7,7 @@ export function Theme({ children }: { children: React.ReactNode }) {
         <ThemeProvider
             attribute="class"
             value={{ light: "light-mode", dark: "dark-mode" }}
-            defaultTheme="dark"
+            defaultTheme="light"
             enableSystem={false}
         >
             {children}
