@@ -59,6 +59,9 @@ const propertySchema = yup.object().shape({
         .typeError("Bathrooms must be a number")
         .min(0, "Bathrooms cannot be negative")
         .required("Bathrooms is required"),
+    address: yup
+        .string()
+        .required("Full address is required"),
     location: yup
         .string()
         .required("Location is required"),
@@ -66,6 +69,11 @@ const propertySchema = yup.object().shape({
         .string()
         .required("Postcode is required")
         .matches(/^[A-Z]{1,2}[0-9R][0-9A-Z]?$/i, "Please enter a valid UK postcode outcode (e.g., M5, LS1, SW1A)"),
+    sqft: yup
+        .number()
+        .typeError("Floor area must be a number")
+        .positive("Floor area must be positive")
+        .required("Floor area is required"),
     tenure: yup
         .string()
         .oneOf(["freehold", "leasehold", "share-of-freehold"], "Select a valid tenure")
@@ -152,6 +160,9 @@ const propertySchema = yup.object().shape({
     displayOnHomepage: yup
         .boolean()
         .default(false),
+    isFeatured: yup
+        .boolean()
+        .default(false),
     status: yup
         .string()
         .oneOf(["draft", "pending-review", "published", "under-offer", "sold", "archived"])
@@ -208,8 +219,10 @@ export default function NewPropertyPage() {
             propertyType: "flat",
             bedrooms: 1,
             bathrooms: 1,
+            address: "",
             location: "",
             postcode: "",
+            sqft: 0,
             tenure: "freehold",
             heroImage: "",
             askingPrice: 0,
@@ -227,6 +240,7 @@ export default function NewPropertyPage() {
             tenancyNotes: "",
             epc: "",
             displayOnHomepage: false,
+            isFeatured: false,
             status: "draft"
         }
     });
@@ -310,6 +324,8 @@ export default function NewPropertyPage() {
             propertyType: formData.propertyType,
             bedrooms: Number(formData.bedrooms),
             bathrooms: Number(formData.bathrooms),
+            sqft: Number(formData.sqft),
+            address: formData.address,
             location: formData.location,
             postcode: formData.postcode,
             tenure: formData.tenure,
@@ -335,6 +351,7 @@ export default function NewPropertyPage() {
             tenancyNotes: formData.tenented ? (formData.tenancyNotes || undefined) : undefined,
             epc: formData.epc || undefined,
             displayOnHomepage: formData.displayOnHomepage,
+            isFeatured: formData.isFeatured,
             status: formData.status,
         };
 
@@ -509,6 +526,20 @@ export default function NewPropertyPage() {
                                     />
                                 </div>
 
+                                <Controller
+                                    name="address"
+                                    control={control}
+                                    render={({ field, fieldState: { error } }) => (
+                                        <Input
+                                            {...field}
+                                            label="Full Address"
+                                            placeholder="e.g. 14 Oakfield Road, Manchester"
+                                            isInvalid={!!error}
+                                            hint={error?.message}
+                                        />
+                                    )}
+                                />
+
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <div className="sm:col-span-2">
                                         <Controller
@@ -518,7 +549,7 @@ export default function NewPropertyPage() {
                                                 <Input
                                                     {...field}
                                                     label="Location (City / Area)"
-                                                    placeholder="e.g. Lekki, Lagos"
+                                                    placeholder="e.g. Manchester, Liverpool"
                                                     isInvalid={!!error}
                                                     hint={error?.message}
                                                 />
@@ -539,6 +570,23 @@ export default function NewPropertyPage() {
                                         )}
                                     />
                                 </div>
+
+                                <Controller
+                                    name="sqft"
+                                    control={control}
+                                    render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => (
+                                        <Input
+                                            {...rest}
+                                            value={value === 0 ? "" : String(value)}
+                                            onChange={(val) => onChange(val === "" ? 0 : Number(val))}
+                                            type="number"
+                                            label="Floor Area (sqft)"
+                                            placeholder="e.g. 850"
+                                            isInvalid={!!error}
+                                            hint={error?.message}
+                                        />
+                                    )}
+                                />
                             </div>
 
                             {/* Card 2: Financials & Investment Metrics */}
@@ -888,6 +936,19 @@ export default function NewPropertyPage() {
                                             onChange={field.onChange}
                                             label="Feature on Homepage"
                                             hint="Show this listing on the public marketplace frontpage."
+                                        />
+                                    )}
+                                />
+
+                                <Controller
+                                    name="isFeatured"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Toggle
+                                            isSelected={field.value}
+                                            onChange={field.onChange}
+                                            label="Featured Property"
+                                            hint="Mark as a featured investment — highlighted with a badge across the site."
                                         />
                                     )}
                                 />

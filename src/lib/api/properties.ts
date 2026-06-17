@@ -25,6 +25,8 @@ export interface Property {
     propertyType: string;
     bedrooms: number;
     bathrooms: number;
+    sqft: number;
+    address: string;
     location: string;
     postcode: string;
     tenure: string;
@@ -44,6 +46,7 @@ export interface Property {
     epc?: string;
     status: PropertyStatus;
     displayOnHomepage: boolean;
+    isFeatured: boolean;
     createdAt: string;
     updatedAt: string;
 }
