@@ -12,7 +12,8 @@ import {
     Settings01,
 } from "@untitledui/icons";
 import { usePathname } from "next/navigation";
-import { SidebarNavigationDefault } from "@/components/application/app-navigation/sidebar-navigation/sidebar-default";
+import Link from "next/link";
+import { AppSidebar } from "@/components/app/app-sidebar";
 import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
 import { MetricsIcon03 } from "@/components/application/metrics/metrics";
 import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
@@ -122,7 +123,7 @@ export default function DashboardPage() {
     return (
         <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
             {/* Sidebar */}
-            <SidebarNavigationDefault
+            <AppSidebar
                 activeUrl={pathname}
                 sections={mainNavSections}
                 footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
@@ -174,9 +175,9 @@ export default function DashboardPage() {
                             <div className="rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
                                 <div className="flex items-center justify-between px-5 py-4 border-b border-secondary">
                                     <h2 className="text-md font-semibold text-primary">Recent Activity</h2>
-                                    <span className="text-sm font-medium text-brand-700 cursor-pointer hover:underline">
+                                    <Link href="/dashboard/leads" className="text-sm font-medium text-brand-700 hover:underline">
                                         View all
-                                    </span>
+                                    </Link>
                                 </div>
                                 <ul className="divide-y divide-secondary">
                                     {isLoadingActivities || !activities ? (

@@ -6,7 +6,7 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuth } from "@/contexts/auth-context";
-import { SidebarNavigationDefault } from "@/components/application/app-navigation/sidebar-navigation/sidebar-default";
+import { AppSidebar } from "@/components/app/app-sidebar";
 import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
 import { LogOut01, HomeLine, Building01, Users01, Settings01, Save01, Key01, Mail01, User01 } from "@untitledui/icons";
@@ -190,7 +190,7 @@ export default function SettingsPage() {
     return (
         <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
             {/* Sidebar */}
-            <SidebarNavigationDefault
+            <AppSidebar
                 activeUrl={pathname}
                 sections={mainNavSections}
                 footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}

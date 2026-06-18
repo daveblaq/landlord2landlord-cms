@@ -20,7 +20,7 @@ import { useProperty, type PropertyStatus } from "@/lib/api/properties";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/base/buttons/button";
 import { Badge } from "@/components/base/badges/badges";
-import { SidebarNavigationDefault } from "@/components/application/app-navigation/sidebar-navigation/sidebar-default";
+import { AppSidebar } from "@/components/app/app-sidebar";
 import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
 import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 import { Carousel } from "@/components/application/carousel/carousel-base";
@@ -63,7 +63,7 @@ export default function ViewPropertyPage() {
     if (isLoading) {
         return (
             <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-                <SidebarNavigationDefault
+                <AppSidebar
                     activeUrl="/dashboard/properties"
                     sections={mainNavSections}
                     footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
@@ -88,7 +88,7 @@ export default function ViewPropertyPage() {
     if (isError || !property) {
         return (
             <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-                <SidebarNavigationDefault
+                <AppSidebar
                     activeUrl="/dashboard/properties"
                     sections={mainNavSections}
                     footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
@@ -120,7 +120,7 @@ export default function ViewPropertyPage() {
     return (
         <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
             {/* Sidebar */}
-            <SidebarNavigationDefault
+            <AppSidebar
                 activeUrl="/dashboard/properties"
                 sections={mainNavSections}
                 footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}

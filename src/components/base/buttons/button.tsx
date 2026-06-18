@@ -40,7 +40,7 @@ export const styles = sortCx({
         },
         lg: {
             root: [
-                "gap-1.5 rounded-lg px-3 py-1.5 text-md font-semibold before:rounded-[7px] data-icon-only:aspect-square data-icon-only:p-2.75",
+                "gap-1.5 rounded-lg px-3 py-2.5 text-md font-semibold before:rounded-[7px] data-icon-only:aspect-square data-icon-only:p-2.75",
                 "*:data-icon:[height:var(--icon-size-lg)] *:data-icon:[min-height:var(--icon-size-lg)] *:data-icon:[width:var(--icon-size-lg)] *:data-icon:[min-width:var(--icon-size-lg)]",
             ].join(" "),
             linkRoot: "gap-1.5",

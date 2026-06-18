@@ -7,6 +7,8 @@ import { cx } from "@/utils/cx";
 import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/contexts/auth-context";
 import { Toaster } from "@/components/application/notifications/toaster";
+import { AuthHandler } from "@/components/app/auth-handler";
+import { SlowConnectionBanner } from "@/components/app/slow-connection-banner";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -31,11 +33,20 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
+            <head>
+                <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
+                <link
+                    href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap&font-display=swap"
+                    rel="stylesheet"
+                />
+            </head>
             <body className={cx(inter.variable, "bg-primary antialiased")}>
                 <QueryProvider>
                     <Theme>
                         <AuthProvider>
                             <RouteProvider>
+                                <AuthHandler />
+                                <SlowConnectionBanner />
                                 {children}
                                 <Toaster />
                             </RouteProvider>

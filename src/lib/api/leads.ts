@@ -24,7 +24,7 @@ export interface Lead {
 }
 
 export interface LeadQueryParams {
-    type?: string;
+    type?: string | string[];
     status?: string;
     email?: string;
     limit?: number;

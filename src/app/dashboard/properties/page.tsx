@@ -16,7 +16,7 @@ import {
     Settings01,
 } from "@untitledui/icons";
 import { usePathname } from "next/navigation";
-import { SidebarNavigationDefault } from "@/components/application/app-navigation/sidebar-navigation/sidebar-default";
+import { AppSidebar } from "@/components/app/app-sidebar";
 import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
 import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 import { Table, TableCard } from "@/components/application/table/table";
@@ -242,7 +242,7 @@ export default function PropertiesPage() {
     return (
         <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
             {/* Sidebar */}
-            <SidebarNavigationDefault
+            <AppSidebar
                 activeUrl={pathname}
                 sections={mainNavSections}
                 footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}

@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { Input } from "@/components/base/input/input";
 import { Button } from "@/components/base/buttons/button";
 import { IconNotification } from "@/components/application/notifications/notifications";
-import { UntitledLogoMinimal } from "@/components/foundations/logo/untitledui-logo-minimal";
+import { ReachLogo } from "@/components/foundations/logo/reach-logo";
 
 // Define Yup validation schema
 const loginSchema = yup.object().shape({
@@ -93,17 +93,10 @@ export default function LoginPage() {
             <div className="relative z-10 w-full max-w-md">
                 {/* Branding Logo */}
                 <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="flex size-14 items-center justify-center rounded-xl border border-secondary bg-primary shadow-xs">
-                        <UntitledLogoMinimal className="size-6 text-brand-solid" />
-                    </div>
-                    <div>
-                        <h2 className="text-display-xs font-semibold text-primary">
-                            Sign in to Landlord2Landlord
-                        </h2>
-                        <p className="mt-1.5 text-sm text-tertiary">
-                            Enter your credentials to access the concierge dashboard
-                        </p>
-                    </div>
+                    <ReachLogo className="h-10 w-auto" />
+                    <p className="text-sm text-tertiary">
+                        Enter your credentials to access the concierge dashboard
+                    </p>
                 </div>
 
                 {/* Login Form Card */}

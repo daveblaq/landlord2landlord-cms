@@ -6,21 +6,17 @@ import {
     Users01,
     LogOut01,
     HomeLine,
-    Plus,
     SearchLg,
-    FilterLines,
     Eye,
     MessageSquare02,
-    Calendar,
     Phone,
     Mail01,
-    ChevronDown,
     Building02,
     File02,
     Settings01,
 } from "@untitledui/icons";
-import { usePathname, useRouter } from "next/navigation";
-import { SidebarNavigationDefault } from "@/components/application/app-navigation/sidebar-navigation/sidebar-default";
+import { usePathname } from "next/navigation";
+import { AppSidebar } from "@/components/app/app-sidebar";
 import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
 import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 import { Table, TableCard } from "@/components/application/table/table";
@@ -50,6 +46,9 @@ import { Heading as AriaHeading } from "react-aria-components";
 // Pagination Component
 import { PaginationPageDefault } from "@/components/application/pagination/pagination";
 
+const BUYER_TYPES: LeadType[] = ['Property Enquiry', 'Mortgage Lead'];
+const SELLER_TYPES: LeadType[] = ['Valuation Lead', 'Insurance Lead', 'General Enquiry'];
+
 const mainNavSections: Array<{ label: string; items: NavItemType[] }> = [
     {
         label: "Main",
@@ -70,15 +69,6 @@ const STATUS_FILTERS: Array<{ label: string; value: LeadStatus | "" }> = [
     { label: "Viewing Scheduled", value: "Viewing Scheduled" },
     { label: "Negotiating", value: "Negotiating" },
     { label: "Closed", value: "Closed" },
-];
-
-const TYPE_FILTERS: Array<{ label: string; value: LeadType | "" }> = [
-    { label: "All Types", value: "" },
-    { label: "Property Enquiry", value: "Property Enquiry" },
-    { label: "Mortgage Lead", value: "Mortgage Lead" },
-    { label: "Insurance Lead", value: "Insurance Lead" },
-    { label: "Valuation Lead", value: "Valuation Lead" },
-    { label: "General Enquiry", value: "General Enquiry" },
 ];
 
 const statusBadgeConfig: Record<LeadStatus, { label: string; color: "brand" | "blue" | "success" | "warning" | "orange" | "gray" }> = {
@@ -118,17 +108,25 @@ const SkeletonRow = ({ id }: { id: string }) => (
 
 export default function LeadsPage() {
     const pathname = usePathname();
-    const router = useRouter();
     const { logout } = useAuth();
 
+    const [activeTab, setActiveTab] = useState<'buyer' | 'seller'>('buyer');
     const [searchEmail, setSearchEmail] = useState("");
     const [params, setParams] = useState<LeadQueryParams>({
         page: 1,
         limit: 20,
         status: "",
-        type: "",
-        email: ""
+        type: BUYER_TYPES,
     });
+
+    const handleTabChange = (tab: 'buyer' | 'seller') => {
+        setActiveTab(tab);
+        setParams(p => ({
+            ...p,
+            type: tab === 'buyer' ? BUYER_TYPES : SELLER_TYPES,
+            page: 1,
+        }));
+    };
 
     const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
@@ -184,7 +182,7 @@ export default function LeadsPage() {
     return (
         <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
             {/* Sidebar */}
-            <SidebarNavigationDefault
+            <AppSidebar
                 activeUrl={pathname}
                 sections={mainNavSections}
                 footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
@@ -212,6 +210,30 @@ export default function LeadsPage() {
                         </p>
                     </div>
 
+                    {/* Lead Category Tabs */}
+                    <div className="flex gap-0.5 rounded-xl bg-secondary_alt p-1 ring-1 ring-inset ring-secondary w-fit">
+                        <button
+                            onClick={() => handleTabChange('buyer')}
+                            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-150 ${
+                                activeTab === 'buyer'
+                                    ? "bg-primary text-secondary shadow-xs ring-1 ring-inset ring-primary"
+                                    : "text-tertiary hover:text-secondary"
+                            }`}
+                        >
+                            Buyer Leads
+                        </button>
+                        <button
+                            onClick={() => handleTabChange('seller')}
+                            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-150 ${
+                                activeTab === 'seller'
+                                    ? "bg-primary text-secondary shadow-xs ring-1 ring-inset ring-primary"
+                                    : "text-tertiary hover:text-secondary"
+                            }`}
+                        >
+                            Sellers &amp; Agents
+                        </button>
+                    </div>
+
                     {/* Filters Row */}
                     <div className="flex flex-col gap-4 bg-secondary_subtle p-4 rounded-xl border border-secondary">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -225,22 +247,6 @@ export default function LeadsPage() {
                                     placeholder="Search by email address…"
                                     className="h-10 w-full rounded-lg border border-secondary bg-primary pl-9 pr-4 text-sm text-primary placeholder:text-placeholder focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                                 />
-                            </div>
-
-                            {/* Type Filter */}
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                                <FilterLines className="h-4 w-4 text-fg-quaternary" />
-                                <select
-                                    value={params.type ?? ""}
-                                    onChange={(e) => setParams((p) => ({ ...p, type: e.target.value, page: 1 }))}
-                                    className="h-10 rounded-lg border border-secondary bg-primary px-3 text-sm text-secondary focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                                >
-                                    {TYPE_FILTERS.map((f) => (
-                                        <option key={f.value} value={f.value}>
-                                            {f.label}
-                                        </option>
-                                    ))}
-                                </select>
                             </div>
                         </div>
 
@@ -266,9 +272,13 @@ export default function LeadsPage() {
                     {/* Table */}
                     <TableCard.Root>
                         <TableCard.Header
-                            title="Captured Leads"
+                            title={activeTab === 'buyer' ? "Buyer Leads" : "Seller & Agent Leads"}
                             badge={String(totalResults)}
-                            description="All landlord property, mortgage, valuation, and general enquiry leads"
+                            description={
+                                activeTab === 'buyer'
+                                    ? "Property enquiry and mortgage lead submissions"
+                                    : "Valuation, insurance, and general enquiry submissions"
+                            }
                         />
 
                         {isError ? (

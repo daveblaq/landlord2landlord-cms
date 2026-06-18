@@ -30,7 +30,7 @@ import { DatePicker } from "@/components/application/date-picker/date-picker";
 import { parseDate } from "@internationalized/date";
 import { Button } from "@/components/base/buttons/button";
 import { IconNotification } from "@/components/application/notifications/notifications";
-import { SidebarNavigationDefault } from "@/components/application/app-navigation/sidebar-navigation/sidebar-default";
+import { AppSidebar } from "@/components/app/app-sidebar";
 import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
 import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 
@@ -439,7 +439,7 @@ export default function EditPropertyPage() {
     if (isFetching) {
         return (
             <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-                <SidebarNavigationDefault
+                <AppSidebar
                     activeUrl="/dashboard/properties"
                     sections={mainNavSections}
                     footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
@@ -464,7 +464,7 @@ export default function EditPropertyPage() {
     if (isError || !property) {
         return (
             <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-                <SidebarNavigationDefault
+                <AppSidebar
                     activeUrl="/dashboard/properties"
                     sections={mainNavSections}
                     footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
@@ -495,7 +495,7 @@ export default function EditPropertyPage() {
     return (
         <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
             {/* Sidebar */}
-            <SidebarNavigationDefault
+            <AppSidebar
                 activeUrl="/dashboard/properties"
                 sections={mainNavSections}
                 footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
