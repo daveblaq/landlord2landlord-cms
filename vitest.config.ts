@@ -5,11 +5,24 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 const dirname = typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+const srcDir = path.resolve(dirname, "src");
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
     test: {
         projects: [
+            // Unit tests for src/**/*.test.ts
+            {
+                test: {
+                    name: "unit",
+                    environment: "node",
+                    include: ["src/**/*.test.ts"],
+                    alias: {
+                        "@": srcDir,
+                    },
+                },
+            },
+            // Storybook component tests
             {
                 extends: true,
                 plugins: [
