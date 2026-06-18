@@ -1,7 +1,7 @@
 @theme {
     /* FONT FAMILY */
-    --font-body: var(--font-inter, "Inter"), -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-    --font-display: var(--font-inter, "Inter"), -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --font-body: "General Sans", var(--font-inter, "Inter"), -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --font-display: "General Sans", var(--font-inter, "Inter"), -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
     --font-mono: ui-monospace, "Roboto Mono", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
     /* FONT SIZE */
@@ -57,16 +57,16 @@
     /* This must match the breakpoint in Sonner: https://github.com/emilkowalski/sonner/blob/main/src/styles.css */
     --breakpoint-xs: 600px;
 
-    /* RADIUS */
+    /* RADIUS — scaled up to match Landlord2Landlord (8/16/24px feel) */
     --radius-none: 0px;
-    --radius-xs: 0.125rem;
-    --radius-sm: 0.25rem;
-    --radius-DEFAULT: 0.25rem;
-    --radius-md: 0.375rem;
-    --radius-lg: 0.5rem;
-    --radius-xl: 0.75rem;
-    --radius-2xl: 1rem;
-    --radius-3xl: 1.5rem;
+    --radius-xs: 0.25rem;
+    --radius-sm: 0.375rem;
+    --radius-DEFAULT: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.25rem;
+    --radius-3xl: 1.75rem;
     --radius-full: 9999px;
 
     /* SHADOW */
@@ -128,6 +128,20 @@
     --color-alpha-white: rgb(255 255 255);
     --color-alpha-black: rgb(0 0 0);
 
+    /* GRAY — warm palette matching Landlord2Landlord brand (#F2F3F0 bg, #E7E8E5 cards, #CBCCC9 borders) */
+    --color-gray-25: rgb(249 249 248);
+    --color-gray-50: rgb(242 243 240);
+    --color-gray-100: rgb(231 232 229);
+    --color-gray-200: rgb(212 213 210);
+    --color-gray-300: rgb(203 204 201);
+    --color-gray-400: rgb(158 159 156);
+    --color-gray-500: rgb(102 102 102);
+    --color-gray-600: rgb(77 78 76);
+    --color-gray-700: rgb(51 53 51);
+    --color-gray-800: rgb(34 34 32);
+    --color-gray-900: rgb(17 17 17);
+    --color-gray-950: rgb(10 10 10);
+
     --color-brand-25: rgb(240 247 255);
     --color-brand-50: rgb(224 238 254);
     --color-brand-100: rgb(196 221 254);
@@ -179,19 +193,6 @@
     --color-success-800: rgb(8 93 58);
     --color-success-900: rgb(7 77 49);
     --color-success-950: rgb(5 51 33);
-
-    --color-gray-true-25: rgb(252 252 252);
-    --color-gray-true-50: rgb(247 247 247);
-    --color-gray-true-100: rgb(245 245 245);
-    --color-gray-true-200: rgb(229 229 229);
-    --color-gray-true-300: rgb(214 214 214);
-    --color-gray-true-400: rgb(163 163 163);
-    --color-gray-true-500: rgb(115 115 115);
-    --color-gray-true-600: rgb(82 82 82);
-    --color-gray-true-700: rgb(66 66 66);
-    --color-gray-true-800: rgb(41 41 41);
-    --color-gray-true-900: rgb(20 20 20);
-    --color-gray-true-950: rgb(15 15 15);
 
     --color-gray-blue-25: rgb(252 252 253);
     --color-gray-blue-50: rgb(248 249 252);
