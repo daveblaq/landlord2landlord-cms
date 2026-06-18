@@ -1,9 +1,27 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
-import { getAuthToken } from '../utils/storage';
+import { clearAuthData, getAuthToken } from '../utils/storage';
+import { API_EVENTS } from './events';
 
 // Environment configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const API_TIMEOUT = parseInt(process.env.NEXT_PUBLIC_API_TIMEOUT || '180000', 10);
+
+// Guard against duplicate 401 dispatches when multiple requests fail simultaneously
+let isHandling401 = false;
+
+// Serializes arrays as repeated params (type=a&type=b) instead of Axios default (type[]=a&type[]=b)
+export function serializeParams(params: Record<string, unknown>): string {
+	const sp = new URLSearchParams();
+	for (const [key, val] of Object.entries(params)) {
+		if (val === undefined || val === null || val === '') continue;
+		if (Array.isArray(val)) {
+			val.forEach((v) => sp.append(key, String(v)));
+		} else {
+			sp.append(key, String(val));
+		}
+	}
+	return sp.toString();
+}
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -13,14 +31,13 @@ const apiClient: AxiosInstance = axios.create({
 		'Content-Type': 'application/json',
 		'Accept': 'application/json',
 	},
+	paramsSerializer: serializeParams,
 });
 
 // Request interceptor for adding auth token
 apiClient.interceptors.request.use(
 	async (config) => {
-		// Get auth token from storage
 		const token = await getAuthToken();
-		
 		if (token) {
 			config.headers.Authorization = `Bearer ${token}`;
 		}
@@ -33,31 +50,45 @@ apiClient.interceptors.request.use(
 
 // Response interceptor for handling errors
 apiClient.interceptors.response.use(
-	(response) => response,
+	(response) => {
+		// Signal that the server is reachable (used by slow-connection banner)
+		if (typeof window !== 'undefined') {
+			window.dispatchEvent(new Event(API_EVENTS.ONLINE));
+		}
+		return response;
+	},
 	async (error: AxiosError) => {
 		if (error.response) {
-			// Handle specific error codes
 			switch (error.response.status) {
 				case 401:
-					// TODO: Handle unauthorized (e.g., logout user, refresh token)
-					console.log('Unauthorized - Please login again');
+					if (!isHandling401) {
+						isHandling401 = true;
+						clearAuthData()
+							.catch((err) => console.error('clearAuthData failed:', err))
+							.finally(() => {
+								if (typeof window !== 'undefined') {
+									window.dispatchEvent(new Event(API_EVENTS.AUTH_EXPIRED));
+								}
+								isHandling401 = false;
+							});
+					}
 					break;
 				case 403:
-					console.log('Forbidden - You do not have permission');
+					console.error('Forbidden - You do not have permission');
 					break;
 				case 404:
-					console.log('Resource not found');
+					// 404s are handled per-feature; no global action needed
 					break;
 				case 500:
-					console.log('Server error - Please try again later');
+					console.error('Server error - Please try again later');
 					break;
 				default:
-					console.log('An error occurred:', error.response.data);
+					console.error('An error occurred:', error.response.data);
 			}
 		} else if (error.request) {
-			console.log('Network error - Please check your connection');
+			console.error('Network error - Please check your connection');
 		} else {
-			console.log('Error:', error.message);
+			console.error('Error:', error.message);
 		}
 		return Promise.reject(error);
 	}
