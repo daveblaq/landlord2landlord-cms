@@ -1,7 +1,7 @@
 "use client";
 
-import { type ComponentType, type HTMLAttributes, type ReactNode, type Ref, createContext, useContext } from "react";
-import { HelpCircle, InfoCircle } from "@untitledui/icons";
+import { type ComponentType, type HTMLAttributes, type ReactNode, type Ref, createContext, useContext, useState } from "react";
+import { HelpCircle, InfoCircle, Eye, EyeOff } from "@untitledui/icons";
 import type { InputProps as AriaInputProps, TextFieldProps as AriaTextFieldProps } from "react-aria-components";
 import { Group as AriaGroup, Input as AriaInput, TextField as AriaTextField } from "react-aria-components";
 import { HintText } from "@/components/base/input/hint-text";
@@ -33,6 +33,8 @@ export interface InputBaseProps extends TextFieldProps {
     groupRef?: Ref<HTMLDivElement>;
     /** Icon component to display on the left side of the input. */
     icon?: ComponentType<HTMLAttributes<HTMLOrSVGElement>>;
+    /** Whether to show password toggle button if type is "password" */
+    showPasswordToggle?: boolean;
 }
 
 export const InputBase = ({
@@ -51,10 +53,16 @@ export const InputBase = ({
     iconClassName,
     // Omit this prop to avoid invalid HTML attribute warning
     isRequired: _isRequired,
+    type,
+    showPasswordToggle = true,
     ...inputProps
 }: Omit<InputBaseProps, "label" | "hint">) => {
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const isPassword = type === "password";
+    const resolvedType = isPassword ? (isPasswordVisible ? "text" : "password") : type;
+
     // Check if the input has a leading icon or tooltip
-    const hasTrailingIcon = tooltip || isInvalid;
+    const hasTrailingIcon = tooltip || isInvalid || (isPassword && showPasswordToggle);
     const hasLeadingIcon = Icon;
 
     // If the input is inside a `TextFieldContext`, use its context to simplify applying styles
@@ -126,16 +134,42 @@ export const InputBase = ({
             {/* Input field */}
             <AriaInput
                 {...(inputProps as AriaInputProps)}
+                type={resolvedType}
                 ref={ref}
                 placeholder={placeholder}
                 className={cx(
                     "m-0 w-full bg-transparent text-sm text-primary ring-0 outline-hidden placeholder:text-placeholder autofill:rounded-lg autofill:text-primary",
                     isDisabled && "cursor-not-allowed text-disabled",
                     sizes[inputSize].root,
+                    isPassword && showPasswordToggle && (
+                        tooltip || isInvalid
+                            ? (inputSize === "lg" ? "pr-[68px]" : inputSize === "md" ? "pr-[62px]" : "pr-[60px]")
+                            : ""
+                    ),
                     context?.inputClassName,
                     inputClassName,
                 )}
             />
+
+            {/* Password toggle button */}
+            {isPassword && showPasswordToggle && (
+                <button
+                    type="button"
+                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                    disabled={isDisabled}
+                    className={cx(
+                        "absolute z-10 cursor-pointer text-fg-quaternary transition duration-200 hover:text-fg-quaternary_hover focus:text-fg-quaternary_hover outline-hidden",
+                        sizes[inputSize].iconTrailing,
+                        isDisabled && "cursor-not-allowed text-fg-disabled",
+                    )}
+                >
+                    {isPasswordVisible ? (
+                        <EyeOff className="size-5" />
+                    ) : (
+                        <Eye className="size-5" />
+                    )}
+                </button>
+            )}
 
             {/* Tooltip and help icon */}
             {tooltip && !isInvalid && (
@@ -143,7 +177,9 @@ export const InputBase = ({
                     <TooltipTrigger
                         className={cx(
                             "absolute cursor-pointer text-fg-quaternary transition duration-200 hover:text-fg-quaternary_hover focus:text-fg-quaternary_hover",
-                            sizes[inputSize].iconTrailing,
+                            isPassword && showPasswordToggle
+                                ? (inputSize === "lg" ? "right-10.5" : inputSize === "md" ? "right-9.5" : "right-9")
+                                : sizes[inputSize].iconTrailing,
                             context?.tooltipClassName,
                             tooltipClassName,
                         )}
@@ -158,7 +194,9 @@ export const InputBase = ({
                 <InfoCircle
                     className={cx(
                         "pointer-events-none absolute size-4 text-fg-error-secondary",
-                        sizes[inputSize].iconTrailing,
+                        isPassword && showPasswordToggle
+                            ? (inputSize === "lg" ? "right-10.5" : inputSize === "md" ? "right-9.5" : "right-9")
+                            : sizes[inputSize].iconTrailing,
                         context?.tooltipClassName,
                         tooltipClassName,
                     )}
@@ -265,6 +303,8 @@ export const Input = ({
                             tooltipClassName,
                             tooltip,
                         }}
+                        isInvalid={isInvalid}
+                        {...props}
                     />
 
                     {hint && <HintText isInvalid={isInvalid}>{hint}</HintText>}

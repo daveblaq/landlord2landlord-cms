@@ -1,42 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams, useRouter, usePathname } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
     ArrowLeft,
     Edit01,
-    Building01,
-    Users01,
-    LogOut01,
-    HomeLine,
     MarkerPin02,
     Building02,
     ChevronLeft,
     ChevronRight,
-    Settings01,
 } from "@untitledui/icons";
 
 import { useProperty, type PropertyStatus } from "@/lib/api/properties";
-import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/base/buttons/button";
 import { Badge } from "@/components/base/badges/badges";
-import { AppSidebar } from "@/components/app/app-sidebar";
-import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
-import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 import { Carousel } from "@/components/application/carousel/carousel-base";
 import { cx } from "@/utils/cx";
-
-const mainNavSections = [
-    {
-        label: "Main",
-        items: [
-            { label: "Dashboard", href: "/dashboard", icon: HomeLine },
-            { label: "Properties", href: "/dashboard/properties", icon: Building01 },
-            { label: "Leads", href: "/dashboard/leads", icon: Users01 },
-            { label: "Settings", href: "/dashboard/settings", icon: Settings01 },
-        ],
-    },
-];
 
 const statusConfig: Record<PropertyStatus, { label: string; color: "success" | "warning" | "error" | "gray" | "blue" | "brand" }> = {
     published: { label: "Published", color: "success" },
@@ -53,8 +32,6 @@ const formatCurrency = (n: number) =>
 export default function ViewPropertyPage() {
     const params = useParams();
     const router = useRouter();
-    const pathname = usePathname();
-    const { logout } = useAuth();
     const id = params.id as string;
 
     const { data: property, isLoading, isError } = useProperty(id);
@@ -62,54 +39,26 @@ export default function ViewPropertyPage() {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-                <AppSidebar
-                    activeUrl="/dashboard/properties"
-                    sections={mainNavSections}
-                    footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                    footerItems={[{ label: "Logout", icon: LogOut01, onClick: () => logout() }]}
-                    showAccountCard={false}
-                />
-                <main className="flex flex-1 flex-col min-w-0">
-                    <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                        <DashboardHeader />
-                    </div>
-                    <div className="flex-1 flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
-                            <p className="text-sm text-tertiary">Loading property listing...</p>
-                        </div>
-                    </div>
-                </main>
+            <div className="flex-1 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+                    <p className="text-sm text-tertiary">Loading property listing...</p>
+                </div>
             </div>
         );
     }
 
     if (isError || !property) {
         return (
-            <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-                <AppSidebar
-                    activeUrl="/dashboard/properties"
-                    sections={mainNavSections}
-                    footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                    footerItems={[{ label: "Logout", icon: LogOut01, onClick: () => logout() }]}
-                    showAccountCard={false}
-                />
-                <main className="flex flex-1 flex-col min-w-0">
-                    <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                        <DashboardHeader />
-                    </div>
-                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-50 text-error-600">
-                            <Building02 className="h-6 w-6" />
-                        </div>
-                        <h3 className="text-md font-semibold text-primary">Failed to load property</h3>
-                        <p className="mt-1 text-sm text-tertiary">The property listing could not be found or there was an error loading it.</p>
-                        <Button className="mt-5" color="secondary" size="md" onClick={() => router.push("/dashboard/properties")}>
-                            Back to Properties
-                        </Button>
-                    </div>
-                </main>
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-50 text-error-600">
+                    <Building02 className="h-6 w-6" />
+                </div>
+                <h3 className="text-md font-semibold text-primary">Failed to load property</h3>
+                <p className="mt-1 text-sm text-tertiary">The property listing could not be found or there was an error loading it.</p>
+                <Button className="mt-5" color="secondary" size="md" onClick={() => router.push("/dashboard/properties")}>
+                    Back to Properties
+                </Button>
             </div>
         );
     }
@@ -118,26 +67,7 @@ export default function ViewPropertyPage() {
     const status = statusConfig[property.status] ?? { label: property.status, color: "gray" as const };
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-            {/* Sidebar */}
-            <AppSidebar
-                activeUrl="/dashboard/properties"
-                sections={mainNavSections}
-                footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                footerItems={[
-                    { label: "Logout", icon: LogOut01, onClick: () => logout() },
-                ]}
-                showAccountCard={false}
-            />
-
-            {/* Main */}
-            <main className="flex flex-1 flex-col min-w-0">
-                {/* Header */}
-                <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                    <DashboardHeader />
-                </div>
-
-                <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
+        <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
                     {/* Top Action Bar */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-secondary pb-5">
                         <div className="flex flex-col gap-1">
@@ -421,12 +351,10 @@ export default function ViewPropertyPage() {
                                         <span className="text-sm text-tertiary">Created At</span>
                                         <span className="text-sm text-tertiary">{new Date(property.createdAt).toLocaleDateString("en-GB")}</span>
                                     </div>
-                                </div>
+                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </main>
-        </div>
+            </div>
     );
 }
