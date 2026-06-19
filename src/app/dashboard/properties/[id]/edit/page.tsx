@@ -2,24 +2,18 @@
 
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useParams, useRouter, usePathname } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
     ArrowLeft,
     Save01,
-    Building01,
-    Users01,
-    LogOut01,
-    HomeLine,
     Trash01,
     Plus,
     Building02,
-    Settings01,
 } from "@untitledui/icons";
 import { useProperty, useUpdateProperty, useUploadPropertyImages, type Property } from "@/lib/api/properties";
-import { useAuth } from "@/contexts/auth-context";
 import { Input } from "@/components/base/input/input";
 import { Label } from "@/components/base/input/label";
 import { HintText } from "@/components/base/input/hint-text";
@@ -30,9 +24,6 @@ import { DatePicker } from "@/components/application/date-picker/date-picker";
 import { parseDate } from "@internationalized/date";
 import { Button } from "@/components/base/buttons/button";
 import { IconNotification } from "@/components/application/notifications/notifications";
-import { AppSidebar } from "@/components/app/app-sidebar";
-import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
-import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 
 const propertySchema = yup.object().shape({
     title: yup
@@ -161,23 +152,16 @@ const propertySchema = yup.object().shape({
     isFeatured: yup
         .boolean()
         .default(false),
+    isHighYield: yup
+        .boolean()
+        .default(false),
     status: yup
         .string()
         .oneOf(["draft", "pending-review", "published", "under-offer", "sold", "archived"])
         .default("draft")
 });
 
-const mainNavSections = [
-    {
-        label: "Main",
-        items: [
-            { label: "Dashboard", href: "/dashboard", icon: HomeLine },
-            { label: "Properties", href: "/dashboard/properties", icon: Building01 },
-            { label: "Leads", href: "/dashboard/leads", icon: Users01 },
-            { label: "Settings", href: "/dashboard/settings", icon: Settings01 },
-        ],
-    },
-];
+
 
 interface ImageStateItem {
     type: "existing" | "new";
@@ -189,9 +173,7 @@ interface ImageStateItem {
 
 export default function EditPropertyPage() {
     const router = useRouter();
-    const pathname = usePathname();
     const params = useParams();
-    const { logout } = useAuth();
     const id = params.id as string;
 
     const { data: property, isLoading: isFetching, isError } = useProperty(id);
@@ -275,6 +257,7 @@ export default function EditPropertyPage() {
                 epc: property.epc || "",
                 displayOnHomepage: property.displayOnHomepage ?? false,
                 isFeatured: property.isFeatured ?? false,
+                isHighYield: (property as any).isHighYield ?? false,
                 status: (property.status as any) || "draft"
             });
 
@@ -405,6 +388,7 @@ export default function EditPropertyPage() {
             epc: formData.epc || undefined,
             displayOnHomepage: formData.displayOnHomepage,
             isFeatured: formData.isFeatured,
+            isHighYield: formData.isHighYield,
             status: formData.status,
         };
 
@@ -438,54 +422,26 @@ export default function EditPropertyPage() {
 
     if (isFetching) {
         return (
-            <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-                <AppSidebar
-                    activeUrl="/dashboard/properties"
-                    sections={mainNavSections}
-                    footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                    footerItems={[{ label: "Logout", icon: LogOut01, onClick: () => logout() }]}
-                    showAccountCard={false}
-                />
-                <main className="flex flex-1 flex-col min-w-0">
-                    <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                        <DashboardHeader />
-                    </div>
-                    <div className="flex-1 flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
-                            <p className="text-sm text-tertiary">Loading property data...</p>
-                        </div>
-                    </div>
-                </main>
+            <div className="flex-1 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-2">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+                    <p className="text-sm text-tertiary">Loading property details...</p>
+                </div>
             </div>
         );
     }
 
     if (isError || !property) {
         return (
-            <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-                <AppSidebar
-                    activeUrl="/dashboard/properties"
-                    sections={mainNavSections}
-                    footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                    footerItems={[{ label: "Logout", icon: LogOut01, onClick: () => logout() }]}
-                    showAccountCard={false}
-                />
-                <main className="flex flex-1 flex-col min-w-0">
-                    <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                        <DashboardHeader />
-                    </div>
-                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-50 text-error-600">
-                            <Building02 className="h-6 w-6" />
-                        </div>
-                        <h3 className="text-md font-semibold text-primary">Failed to load property</h3>
-                        <p className="mt-1 text-sm text-tertiary">The property listing could not be found or there was an error loading it.</p>
-                        <Button className="mt-5" color="secondary" size="md" onClick={() => router.push("/dashboard/properties")}>
-                            Back to Properties
-                        </Button>
-                    </div>
-                </main>
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error-50 text-error-600">
+                    <Building02 className="h-6 w-6" />
+                </div>
+                <h3 className="text-md font-semibold text-primary">Failed to load property</h3>
+                <p className="mt-1 text-sm text-tertiary">The property listing could not be found or there was an error loading it.</p>
+                <Button className="mt-5" color="secondary" size="md" onClick={() => router.push("/dashboard/properties")}>
+                    Back to Properties
+                </Button>
             </div>
         );
     }
@@ -493,26 +449,7 @@ export default function EditPropertyPage() {
     const isPending = isSubmitting || isUploading;
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-            {/* Sidebar */}
-            <AppSidebar
-                activeUrl="/dashboard/properties"
-                sections={mainNavSections}
-                footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                footerItems={[
-                    { label: "Logout", icon: LogOut01, onClick: () => logout() },
-                ]}
-                showAccountCard={false}
-            />
-
-            {/* Main */}
-            <main className="flex flex-1 flex-col min-w-0">
-                {/* Header */}
-                <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                    <DashboardHeader />
-                </div>
-
-                <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
+        <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
                     {/* Page Title + Actions */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-secondary pb-5">
                         <div>
@@ -1046,7 +983,20 @@ export default function EditPropertyPage() {
                                             isSelected={field.value}
                                             onChange={field.onChange}
                                             label="Featured Property"
-                                            hint="Mark as a featured investment — highlighted with a badge across the site."
+                                            hint="Highlight this property across the site."
+                                        />
+                                    )}
+                                />
+
+                                <Controller
+                                    name="isHighYield"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Toggle
+                                            isSelected={field.value}
+                                            onChange={field.onChange}
+                                            label="Expert High Yield"
+                                            hint={'Show the "Expert High Yield" badge on this listing.'}
                                         />
                                     )}
                                 />
@@ -1138,9 +1088,7 @@ export default function EditPropertyPage() {
                                 </Button>
                             </div>
                         </div>
-                    </form>
-                </div>
-            </main>
+            </form>
         </div>
     );
 }

@@ -10,6 +10,7 @@ export enum UserRole {
     CLIENT = 'client',
     SERVICE_PROVIDER = 'service_provider',
     ADMIN = 'admin',
+    CONCIERGE = 'concierge',
 }
 
 export interface User {

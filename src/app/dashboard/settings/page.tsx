@@ -1,15 +1,11 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuth } from "@/contexts/auth-context";
-import { AppSidebar } from "@/components/app/app-sidebar";
-import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
-import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
-import { LogOut01, HomeLine, Building01, Users01, Settings01, Save01, Key01, Mail01, User01 } from "@untitledui/icons";
+import { Save01, Key01, Mail01, User01 } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
@@ -17,41 +13,10 @@ import { countriesOptions } from "@/utils/countries";
 import { useUpdateProfile, useChangePassword } from "@/lib/api/profile";
 import { toast } from "sonner";
 import { IconNotification } from "@/components/application/notifications/notifications";
-import type { NavItemType } from "@/components/application/app-navigation/config";
-
-// Sidebar navigation config including Settings
-const mainNavSections: Array<{ label: string; items: NavItemType[] }> = [
-    {
-        label: "Main",
-        items: [
-            {
-                label: "Dashboard",
-                href: "/dashboard",
-                icon: HomeLine,
-            },
-            {
-                label: "Properties",
-                href: "/dashboard/properties",
-                icon: Building01,
-            },
-            {
-                label: "Leads",
-                href: "/dashboard/leads",
-                icon: Users01,
-            },
-            {
-                label: "Settings",
-                href: "/dashboard/settings",
-                icon: Settings01,
-            },
-        ],
-    },
-];
 
 // Validation schemas matching backend requirements
 const profileSchema = yup.object().shape({
     fullname: yup.string().required("Full name is required").trim(),
-    username: yup.string().required("Username must be at least 3 characters").min(3, "Username must be at least 3 characters").trim(),
     email: yup.string().required("Email is required").email("Invalid email address").trim(),
     country: yup.string().required("Country is required"),
 });
@@ -66,8 +31,7 @@ const passwordSchema = yup.object().shape({
 });
 
 export default function SettingsPage() {
-    const pathname = usePathname();
-    const { user, logout, refetchUser } = useAuth();
+    const { user, refetchUser } = useAuth();
     
     // Mutations
     const updateProfileMutation = useUpdateProfile();
@@ -82,7 +46,6 @@ export default function SettingsPage() {
         resolver: yupResolver(profileSchema),
         defaultValues: {
             fullname: "",
-            username: "",
             email: "",
             country: "US",
         },
@@ -112,7 +75,6 @@ export default function SettingsPage() {
 
             resetProfile({
                 fullname: user.fullname || "",
-                username: user.username || "",
                 email: user.email || "",
                 country: countryCode,
             });
@@ -125,7 +87,6 @@ export default function SettingsPage() {
         updateProfileMutation.mutate(
             {
                 fullname: data.fullname,
-                username: data.username,
                 email: data.email,
                 country: countryLabel,
             },
@@ -188,26 +149,7 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-            {/* Sidebar */}
-            <AppSidebar
-                activeUrl={pathname}
-                sections={mainNavSections}
-                footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                footerItems={[
-                    { label: "Logout", icon: LogOut01, onClick: () => logout() },
-                ]}
-                showAccountCard={false}
-            />
-
-            {/* Main */}
-            <main className="flex flex-1 flex-col min-w-0">
-                {/* Header */}
-                <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                    <DashboardHeader />
-                </div>
-
-                <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-8 max-w-4xl">
+        <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-8 max-w-4xl">
                     {/* Page Title */}
                     <div>
                         <h1 className="text-xl font-semibold text-primary lg:text-display-xs">
@@ -227,35 +169,23 @@ export default function SettingsPage() {
                             </div>
                             <form onSubmit={handleProfileSubmit(onProfileSubmit)} className="p-5 space-y-4">
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                    <Controller
-                                        name="fullname"
-                                        control={profileControl}
-                                        render={({ field, fieldState: { error } }) => (
-                                            <Input
-                                                {...field}
-                                                id="fullname"
-                                                label="Full Name"
-                                                placeholder="Olivia Rhye"
-                                                icon={User01}
-                                                isInvalid={!!error}
-                                                hint={error?.message}
-                                            />
-                                        )}
-                                    />
-                                    <Controller
-                                        name="username"
-                                        control={profileControl}
-                                        render={({ field, fieldState: { error } }) => (
-                                            <Input
-                                                {...field}
-                                                id="username"
-                                                label="Username"
-                                                placeholder="oliviarhye"
-                                                isInvalid={!!error}
-                                                hint={error?.message}
-                                            />
-                                        )}
-                                    />
+                                    <div className="sm:col-span-2">
+                                        <Controller
+                                            name="fullname"
+                                            control={profileControl}
+                                            render={({ field, fieldState: { error } }) => (
+                                                <Input
+                                                    {...field}
+                                                    id="fullname"
+                                                    label="Full Name"
+                                                    placeholder="Olivia Rhye"
+                                                    icon={User01}
+                                                    isInvalid={!!error}
+                                                    hint={error?.message}
+                                                />
+                                            )}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <Controller
@@ -382,8 +312,6 @@ export default function SettingsPage() {
                             </form>
                         </section>
                     </div>
-                </div>
-            </main>
         </div>
     );
 }

@@ -3,60 +3,19 @@
 import {
     Building01,
     Users01,
-    LogOut01,
-    HomeLine,
     CurrencyPound,
     TrendUp01,
     Users03,
     Building02,
-    Settings01,
 } from "@untitledui/icons";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { AppSidebar } from "@/components/app/app-sidebar";
-import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
 import { MetricsIcon03 } from "@/components/application/metrics/metrics";
-import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
-import { useAuth } from "@/contexts/auth-context";
-import type { NavItemType } from "@/components/application/app-navigation/config";
 import { useStats } from "@/lib/api/stats";
 import { useActivities } from "@/lib/api/activities";
-
-// ─── Navigation Config ────────────────────────────────────────────────────────
-
-const mainNavSections: Array<{ label: string; items: NavItemType[] }> = [
-    {
-        label: "Main",
-        items: [
-            {
-                label: "Dashboard",
-                href: "/dashboard",
-                icon: HomeLine,
-            },
-            {
-                label: "Properties",
-                href: "/dashboard/properties",
-                icon: Building01,
-            },
-            {
-                label: "Leads",
-                href: "/dashboard/leads",
-                icon: Users01,
-            },
-            {
-                label: "Settings",
-                href: "/dashboard/settings",
-                icon: Settings01,
-            },
-        ],
-    },
-];
 
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-    const pathname = usePathname();
-    const { logout } = useAuth();
     const { data: stats, isLoading } = useStats();
     const { data: activities, isLoading: isLoadingActivities } = useActivities();
 
@@ -121,30 +80,7 @@ export default function DashboardPage() {
     ];
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-            {/* Sidebar */}
-            <AppSidebar
-                activeUrl={pathname}
-                sections={mainNavSections}
-                footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                footerItems={[
-                    {
-                        label: "Logout",
-                        icon: LogOut01,
-                        onClick: () => logout(),
-                    },
-                ]}
-                showAccountCard={false}
-            />
-
-            {/* Main content area */}
-            <main className="flex flex-1 flex-col min-w-0">
-                <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                    <DashboardHeader />
-                </div>
-
-                {/* Page Body */}
-                <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-8">
+        <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-8">
 
                     {/* Metrics Grid */}
                     <section>
@@ -272,7 +208,5 @@ export default function DashboardPage() {
                         </section>
                     </div>
                 </div>
-            </main>
-        </div>
     );
 }
