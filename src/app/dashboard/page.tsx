@@ -5,19 +5,17 @@ import {
     Users01,
     LogOut01,
     HomeLine,
-    CurrencyPound,
     TrendUp01,
     Users03,
     Building02,
     Settings01,
-    ChartBreakoutSquare,
+    CheckCircle,
 } from "@untitledui/icons";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
 import { MetricsIcon03 } from "@/components/application/metrics/metrics";
-import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 import { NeedsAttentionSection } from "@/components/app/needs-attention-section";
 import { useAuth } from "@/contexts/auth-context";
@@ -91,13 +89,20 @@ export default function DashboardPage() {
     const { data: pendingReviewProps, isLoading: isPendingLoading } = useProperties({ status: "pending-review" });
     const { data: draftProps, isLoading: isDraftLoading } = useProperties({ status: "draft" });
 
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat("en-GB", {
-            style: "currency",
-            currency: "GBP",
-            maximumFractionDigits: 0,
-        }).format(value);
-    };
+    // ── Derived pipeline metrics ───────────────────────────────────────────
+    const totalPipelineCount =
+        (pipelineNew?.totalResults ?? 0) +
+        (pipelineContacted?.totalResults ?? 0) +
+        (pipelineQualified?.totalResults ?? 0) +
+        (pipelineClosed?.totalResults ?? 0);
+    const respondedCount =
+        (pipelineContacted?.totalResults ?? 0) +
+        (pipelineQualified?.totalResults ?? 0) +
+        (pipelineClosed?.totalResults ?? 0);
+    const responseRate =
+        !isPipelineLoading && totalPipelineCount > 0
+            ? Math.round((respondedCount / totalPipelineCount) * 100)
+            : null;
 
     const formatRelativeTime = (dateInput: string | Date): string => {
         const date = new Date(dateInput);
@@ -136,18 +141,18 @@ export default function DashboardPage() {
             changeTrend: stats?.activeLeads.trend || "positive",
         },
         {
-            icon: CurrencyPound,
-            subtitle: "Avg. Monthly Rent",
-            title: isLoading || !stats ? "" : formatCurrency(stats.avgMonthlyRent.value),
-            change: stats?.avgMonthlyRent.change || "0%",
-            changeTrend: stats?.avgMonthlyRent.trend || "positive",
+            icon: TrendUp01,
+            subtitle: "New Leads",
+            title: isPipelineLoading ? "" : (pipelineNew?.totalResults ?? 0).toString(),
+            change: "",
+            changeTrend: "positive" as const,
         },
         {
-            icon: TrendUp01,
-            subtitle: "Conversion Rate",
-            title: isLoading || !stats ? "" : `${stats.conversionRate.value.toFixed(1).replace(/\.0$/, "")}%`,
-            change: stats?.conversionRate.change || "0%",
-            changeTrend: stats?.conversionRate.trend || "positive",
+            icon: CheckCircle,
+            subtitle: "Response Rate",
+            title: isPipelineLoading ? "" : responseRate !== null ? `${responseRate}%` : "—",
+            change: "",
+            changeTrend: "positive" as const,
         },
     ];
 
@@ -210,9 +215,6 @@ export default function DashboardPage() {
 
                     {/* Metrics Grid */}
                     <section>
-                        <h2 className="text-sm font-semibold uppercase tracking-wider text-quaternary mb-4">
-                            Overview
-                        </h2>
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                             {metricsConfig.map((metric) => (
                                 <MetricsIcon03
@@ -223,46 +225,9 @@ export default function DashboardPage() {
                                     change={metric.change}
                                     changeTrend={metric.changeTrend}
                                     actions={false}
-                                    isLoading={isLoading}
+                                    isLoading={isLoading || isPipelineLoading}
                                 />
                             ))}
-
-                            {/* Lead Pipeline card */}
-                            <div className="rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
-                                <div className="flex flex-col gap-4 px-4 py-5 md:gap-5 md:px-5">
-                                    {isPipelineLoading ? (
-                                        <>
-                                            <div className="h-10 w-10 rounded-lg bg-secondary animate-pulse" />
-                                            <div className="flex flex-col gap-2.5">
-                                                <div className="h-4 w-28 rounded bg-secondary_hover animate-pulse" />
-                                                {[1, 2, 3, 4].map((i) => (
-                                                    <div key={i} className="flex justify-between">
-                                                        <div className="h-3.5 w-16 rounded bg-secondary_hover animate-pulse" />
-                                                        <div className="h-3.5 w-6 rounded bg-secondary_hover animate-pulse" />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FeaturedIcon color="gray" theme="modern" icon={ChartBreakoutSquare} size="sm" />
-                                            <div className="flex flex-col gap-3">
-                                                <h3 className="text-sm font-semibold text-tertiary">Lead Pipeline</h3>
-                                                <div className="flex flex-col gap-1.5">
-                                                    {pipelineRows.map(({ label, count }) => (
-                                                        <div key={label} className="flex items-center justify-between">
-                                                            <span className="text-sm text-tertiary">{label}</span>
-                                                            <span className="text-sm font-semibold text-primary">
-                                                                {count ?? "—"}
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
                         </div>
                     </section>
 
@@ -365,6 +330,23 @@ export default function DashboardPage() {
                                             {action.label}
                                         </a>
                                     ))}
+                                </div>
+
+                                {/* Lead Pipeline Breakdown */}
+                                <div className="border-t border-secondary px-5 py-4">
+                                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-quaternary">
+                                        Lead Pipeline
+                                    </p>
+                                    <div className="flex flex-col gap-1.5">
+                                        {pipelineRows.map(({ label, count }) => (
+                                            <div key={label} className="flex items-center justify-between rounded-md px-2 py-1 text-sm">
+                                                <span className="text-tertiary">{label}</span>
+                                                <span className="font-semibold text-primary">
+                                                    {isPipelineLoading ? "—" : (count ?? "—")}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {/* Property Status Summary */}
