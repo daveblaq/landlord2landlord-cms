@@ -10,21 +10,26 @@ import {
     Users03,
     Building02,
     Settings01,
+    ChartBreakoutSquare,
 } from "@untitledui/icons";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
 import { MetricsIcon03 } from "@/components/application/metrics/metrics";
+import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
 import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
+import { NeedsAttentionSection } from "@/components/app/needs-attention-section";
 import { useAuth } from "@/contexts/auth-context";
 import type { NavItemType } from "@/components/application/app-navigation/config";
 import { useStats } from "@/lib/api/stats";
 import { useActivities } from "@/lib/api/activities";
+import { useLeads } from "@/lib/api/leads";
+import { useProperties } from "@/lib/api/properties";
 
 // ─── Navigation Config ────────────────────────────────────────────────────────
 
-const mainNavSections: Array<{ label: string; items: NavItemType[] }> = [
+const buildNavSections = (newLeadCount: number | undefined): Array<{ label: string; items: NavItemType[] }> => [
     {
         label: "Main",
         items: [
@@ -42,6 +47,14 @@ const mainNavSections: Array<{ label: string; items: NavItemType[] }> = [
                 label: "Leads",
                 href: "/dashboard/leads",
                 icon: Users01,
+                badge: newLeadCount ? (
+                    <span
+                        className="inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-brand-500 px-1 text-[10px] font-semibold text-white"
+                        aria-label={`${newLeadCount} new leads`}
+                    >
+                        {newLeadCount}
+                    </span>
+                ) : undefined,
             },
             {
                 label: "Settings",
@@ -57,8 +70,26 @@ const mainNavSections: Array<{ label: string; items: NavItemType[] }> = [
 export default function DashboardPage() {
     const pathname = usePathname();
     const { logout } = useAuth();
+
+    // ── Core stats & activity ──────────────────────────────────────────────
     const { data: stats, isLoading } = useStats();
     const { data: activities, isLoading: isLoadingActivities } = useActivities();
+
+    // ── Needs Attention queries ────────────────────────────────────────────
+    const { data: newLeadsData } = useLeads({ status: "New", limit: 5 });
+    const { data: pendingPropertiesData } = useProperties({ status: "pending-review", limit: 5 });
+
+    // ── Lead pipeline queries (parallel) ──────────────────────────────────
+    const { data: pipelineNew, isLoading: isPNew } = useLeads({ status: "New" });
+    const { data: pipelineContacted, isLoading: isPContacted } = useLeads({ status: "Contacted" });
+    const { data: pipelineQualified, isLoading: isPQualified } = useLeads({ status: "Qualified" });
+    const { data: pipelineClosed, isLoading: isPClosed } = useLeads({ status: "Closed" });
+    const isPipelineLoading = isPNew || isPContacted || isPQualified || isPClosed;
+
+    // ── Property status queries (parallel) ────────────────────────────────
+    const { data: publishedProps, isLoading: isPublishedLoading } = useProperties({ status: "published" });
+    const { data: pendingReviewProps, isLoading: isPendingLoading } = useProperties({ status: "pending-review" });
+    const { data: draftProps, isLoading: isDraftLoading } = useProperties({ status: "draft" });
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat("en-GB", {
@@ -81,7 +112,7 @@ export default function DashboardPage() {
         if (diffHours < 24) return `${diffHours} hr${diffHours > 1 ? "s" : ""} ago`;
         if (diffDays === 1) return "Yesterday";
         if (diffDays < 7) return `${diffDays} days ago`;
-        
+
         return date.toLocaleDateString("en-GB", {
             day: "numeric",
             month: "short",
@@ -120,12 +151,43 @@ export default function DashboardPage() {
         },
     ];
 
+    const pipelineRows = [
+        { label: "New", count: pipelineNew?.totalResults },
+        { label: "Contacted", count: pipelineContacted?.totalResults },
+        { label: "Qualified", count: pipelineQualified?.totalResults },
+        { label: "Closed", count: pipelineClosed?.totalResults },
+    ];
+
+    const propertyStatusRows = [
+        {
+            label: "Published",
+            count: isPublishedLoading ? undefined : publishedProps?.totalResults,
+            status: "published",
+            dot: "bg-success-500",
+        },
+        {
+            label: "Pending Review",
+            count: isPendingLoading ? undefined : pendingReviewProps?.totalResults,
+            status: "pending-review",
+            dot: "bg-warning-500",
+        },
+        {
+            label: "Draft",
+            count: isDraftLoading ? undefined : draftProps?.totalResults,
+            status: "draft",
+            dot: "bg-secondary",
+        },
+    ];
+
+    const newLeadCount = newLeadsData?.totalResults;
+    const navSections = buildNavSections(newLeadCount);
+
     return (
         <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
             {/* Sidebar */}
             <AppSidebar
                 activeUrl={pathname}
-                sections={mainNavSections}
+                sections={navSections}
                 footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
                 footerItems={[
                     {
@@ -164,8 +226,51 @@ export default function DashboardPage() {
                                     isLoading={isLoading}
                                 />
                             ))}
+
+                            {/* Lead Pipeline card */}
+                            <div className="rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
+                                <div className="flex flex-col gap-4 px-4 py-5 md:gap-5 md:px-5">
+                                    {isPipelineLoading ? (
+                                        <>
+                                            <div className="h-10 w-10 rounded-lg bg-secondary animate-pulse" />
+                                            <div className="flex flex-col gap-2.5">
+                                                <div className="h-4 w-28 rounded bg-secondary_hover animate-pulse" />
+                                                {[1, 2, 3, 4].map((i) => (
+                                                    <div key={i} className="flex justify-between">
+                                                        <div className="h-3.5 w-16 rounded bg-secondary_hover animate-pulse" />
+                                                        <div className="h-3.5 w-6 rounded bg-secondary_hover animate-pulse" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FeaturedIcon color="gray" theme="modern" icon={ChartBreakoutSquare} size="sm" />
+                                            <div className="flex flex-col gap-3">
+                                                <h3 className="text-sm font-semibold text-tertiary">Lead Pipeline</h3>
+                                                <div className="flex flex-col gap-1.5">
+                                                    {pipelineRows.map(({ label, count }) => (
+                                                        <div key={label} className="flex items-center justify-between">
+                                                            <span className="text-sm text-tertiary">{label}</span>
+                                                            <span className="text-sm font-semibold text-primary">
+                                                                {count ?? "—"}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </section>
+
+                    {/* Needs Attention — renders only when there's something to action */}
+                    <NeedsAttentionSection
+                        newLeads={newLeadsData?.results}
+                        pendingProperties={pendingPropertiesData?.results}
+                    />
 
                     {/* Bottom two-column layout */}
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -182,19 +287,12 @@ export default function DashboardPage() {
                                 <ul className="divide-y divide-secondary">
                                     {isLoadingActivities || !activities ? (
                                         Array.from({ length: 5 }).map((_, idx) => (
-                                            <li
-                                                key={idx}
-                                                className="flex items-start gap-4 px-5 py-4"
-                                            >
-                                                {/* Pulse Icon Circle */}
+                                            <li key={idx} className="flex items-start gap-4 px-5 py-4">
                                                 <div className="h-8 w-8 shrink-0 rounded-full bg-secondary animate-pulse" />
                                                 <div className="flex-1 space-y-2 min-w-0">
-                                                    {/* Pulse Title */}
                                                     <div className="h-4 w-1/3 rounded bg-secondary_hover animate-pulse" />
-                                                    {/* Pulse Description */}
                                                     <div className="h-3.5 w-2/3 rounded bg-secondary_hover animate-pulse" />
                                                 </div>
-                                                {/* Pulse Time */}
                                                 <div className="h-3 w-12 rounded bg-secondary_hover animate-pulse" />
                                             </li>
                                         ))
@@ -220,7 +318,7 @@ export default function DashboardPage() {
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-semibold text-primary truncate">
                                                         {activity.title}
-                                                     </p>
+                                                    </p>
                                                     <p className="text-sm text-tertiary truncate">
                                                         {activity.description}
                                                     </p>
@@ -235,7 +333,7 @@ export default function DashboardPage() {
                             </div>
                         </section>
 
-                        {/* Quick Actions */}
+                        {/* Quick Actions + Property Status */}
                         <section className="lg:col-span-1">
                             <div className="rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset h-full">
                                 <div className="px-5 py-4 border-b border-secondary">
@@ -267,6 +365,30 @@ export default function DashboardPage() {
                                             {action.label}
                                         </a>
                                     ))}
+                                </div>
+
+                                {/* Property Status Summary */}
+                                <div className="border-t border-secondary px-5 py-4">
+                                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-quaternary">
+                                        Property Status
+                                    </p>
+                                    <div className="flex flex-col gap-2">
+                                        {propertyStatusRows.map(({ label, count, status, dot }) => (
+                                            <Link
+                                                key={status}
+                                                href={`/dashboard/properties?status=${status}`}
+                                                className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-secondary_subtle"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
+                                                    <span className="text-tertiary">{label}</span>
+                                                </div>
+                                                <span className="font-semibold text-primary">
+                                                    {count ?? "—"}
+                                                </span>
+                                            </Link>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </section>
