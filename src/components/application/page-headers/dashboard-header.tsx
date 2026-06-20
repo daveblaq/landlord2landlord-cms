@@ -12,6 +12,7 @@ export const DashboardHeader = () => {
     const { user, logout } = useAuth();
     const pathname = usePathname();
     const segments = pathname.split("/").filter(Boolean);
+    const isDashboardHome = pathname === "/dashboard" || pathname === "/dashboard/";
 
     // Extract property ID from URL segments if it exists (24-char hex string)
     const propertyId = segments.find(seg => /^[0-9a-fA-F]{24}$/.test(seg));
@@ -48,7 +49,8 @@ export const DashboardHeader = () => {
             } else if (segment === "edit") {
                 label = "Edit";
             } else if (/^[0-9a-fA-F]{24}$/.test(segment)) {
-                label = property?.title || "Property Details";
+                const parent = segments[i - 1];
+                label = parent === "leads" ? "Lead Details" : (property?.title || "Property Details");
             }
 
             items.push({ href: currentPath, label, isHome: false });
@@ -75,38 +77,40 @@ export const DashboardHeader = () => {
             </div>
             
             {/* Header Title with Avatar & Actions */}
-            <div className="flex flex-col gap-4 border-b border-secondary pb-5 lg:flex-row lg:items-center">
-                <div className="flex flex-1 items-center gap-3 lg:gap-4">
-                    <Avatar 
-                        size="xl" 
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.fullname || "L2L")}`} 
-                        alt={user?.fullname || "User"} 
-                    />
-                    <div>
-                        <h1 className="text-xl font-semibold text-primary lg:text-display-xs">
-                            Welcome back, {user?.fullname || "Admin"}
-                        </h1>
-                        <p className="text-md text-tertiary">
-                            Manage properties, view leads, and oversee the Landlord2Landlord system.
-                        </p>
+            {isDashboardHome && (
+                <div className="flex flex-col gap-4 border-b border-secondary pb-5 lg:flex-row lg:items-center">
+                    <div className="flex flex-1 items-center gap-3 lg:gap-4">
+                        <Avatar 
+                            size="xl" 
+                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.fullname || "L2L")}`} 
+                            alt={user?.fullname || "User"} 
+                        />
+                        <div>
+                            <h1 className="text-xl font-semibold text-primary lg:text-display-xs">
+                                Welcome back, {user?.fullname || "Admin"}
+                            </h1>
+                            <p className="text-md text-tertiary">
+                                Manage properties, view leads, and oversee the Landlord2Landlord system.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {/* Actions */}
+                    <div className="flex items-center gap-3 self-start lg:self-center">
+                        <div className="rounded-full bg-brand-500/10 px-3 py-1 text-xs font-semibold text-brand-solid uppercase tracking-wider">
+                            {user?.role || "Concierge"}
+                        </div>
+                        <Button 
+                            color="secondary" 
+                            size="md" 
+                            iconLeading={LogOut01}
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </Button>
                     </div>
                 </div>
-                
-                {/* Actions */}
-                <div className="flex items-center gap-3 self-start lg:self-center">
-                    <div className="rounded-full bg-brand-500/10 px-3 py-1 text-xs font-semibold text-brand-solid uppercase tracking-wider">
-                        {user?.role || "Concierge"}
-                    </div>
-                    <Button 
-                        color="secondary" 
-                        size="md" 
-                        iconLeading={LogOut01}
-                        onClick={handleLogout}
-                    >
-                        Logout
-                    </Button>
-                </div>
-            </div>
+            )}
         </div>
     );
 };

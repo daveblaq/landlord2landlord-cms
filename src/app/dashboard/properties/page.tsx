@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
 import {
     Plus,
     SearchLg,
@@ -17,6 +18,7 @@ import { Dropdown } from "@/components/base/dropdown/dropdown";
 import {
     useProperties,
     useDeleteProperty,
+    usePropertyStats,
     type PropertyQueryParams,
     type Property,
     type PropertyStatus,
@@ -164,7 +166,8 @@ const SkeletonRow = ({ id }: { id: string }) => (
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function PropertiesPage() {
-
+    const { user } = useAuth();
+    const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
     const [params, setParams] = useState<PropertyQueryParams>({
         status: "all",
         page: 1,
@@ -173,10 +176,32 @@ export default function PropertiesPage() {
     const [search, setSearch] = useState("");
     const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
 
+    const handleTabChange = (tab: 'all' | 'my') => {
+        setActiveTab(tab);
+        setParams((p) => ({
+            ...p,
+            page: 1,
+        }));
+    };
+
     const { data, isLoading, isError } = useProperties({
         ...params,
         location: search || undefined,
+        createdBy: activeTab === 'my' && user?.id ? user.id : undefined,
     });
+
+    const { data: statsData, isLoading: statsLoading } = usePropertyStats({
+        location: search || undefined,
+        createdBy: activeTab === 'my' && user?.id ? user.id : undefined,
+    });
+
+    const handleCardClick = (status: PropertyStatus) => {
+        setParams(p => ({
+            ...p,
+            status: p.status === status ? "all" : status,
+            page: 1
+        }));
+    };
 
     const deleteProperty = useDeleteProperty();
 
@@ -230,6 +255,68 @@ export default function PropertiesPage() {
                         >
                             Add Property
                         </Button>
+                    </div>
+
+                    {/* Metrics Cards Grid */}
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                        {[
+                            { status: "published" as const, label: "Published", dotClass: "bg-success-500" },
+                            { status: "draft" as const, label: "Draft", dotClass: "bg-utility-gray-500" },
+                            { status: "pending-review" as const, label: "Pending Review", dotClass: "bg-warning-500" },
+                            { status: "under-offer" as const, label: "Under Offer", dotClass: "bg-blue-500" },
+                            { status: "sold" as const, label: "Sold", dotClass: "bg-error-500" },
+                            { status: "archived" as const, label: "Archived", dotClass: "bg-utility-gray-400" },
+                        ].map((item) => {
+                            const count = statsData?.[item.status] ?? 0;
+                            const isSelected = params.status === item.status;
+                            return (
+                                <button
+                                    key={item.status}
+                                    onClick={() => handleCardClick(item.status)}
+                                    className={`text-left rounded-xl p-4 shadow-xs ring-1 ring-secondary ring-inset flex flex-col gap-1 transition-all duration-200 hover:shadow-md hover:ring-brand-500 bg-primary group cursor-pointer ${
+                                        isSelected ? "ring-2 ring-brand-500 bg-secondary_subtle" : ""
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between w-full">
+                                        <span className="text-xs font-semibold text-tertiary uppercase tracking-wider truncate mr-2">{item.label}</span>
+                                        <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${item.dotClass}`} />
+                                    </div>
+                                    <div className="flex items-baseline gap-2 mt-1">
+                                        <span className="text-2xl font-bold text-primary">
+                                            {statsLoading ? (
+                                                <span className="block h-8 w-12 rounded bg-secondary_hover animate-pulse mt-1" />
+                                            ) : (
+                                                count
+                                            )}
+                                        </span>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Property Filter Tabs */}
+                    <div className="flex gap-0.5 rounded-xl bg-secondary_alt p-1 ring-1 ring-inset ring-secondary w-fit">
+                        <button
+                            onClick={() => handleTabChange('all')}
+                            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-150 cursor-pointer ${
+                                activeTab === 'all'
+                                    ? "bg-primary text-secondary shadow-xs ring-1 ring-inset ring-primary"
+                                    : "text-tertiary hover:text-secondary"
+                            }`}
+                        >
+                            All Properties
+                        </button>
+                        <button
+                            onClick={() => handleTabChange('my')}
+                            className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-150 cursor-pointer ${
+                                activeTab === 'my'
+                                    ? "bg-primary text-secondary shadow-xs ring-1 ring-inset ring-primary"
+                                    : "text-tertiary hover:text-secondary"
+                            }`}
+                        >
+                            My Properties
+                        </button>
                     </div>
 
                     {/* Filters Row */}
