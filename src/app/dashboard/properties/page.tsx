@@ -2,10 +2,6 @@
 
 import { useState } from "react";
 import {
-    Building01,
-    Users01,
-    LogOut01,
-    HomeLine,
     Plus,
     SearchLg,
     FilterLines,
@@ -13,17 +9,11 @@ import {
     Trash01,
     Eye,
     Building02,
-    Settings01,
 } from "@untitledui/icons";
-import { usePathname } from "next/navigation";
-import { AppSidebar } from "@/components/app/app-sidebar";
-import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
-import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 import { Table, TableCard } from "@/components/application/table/table";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
-import { useAuth } from "@/contexts/auth-context";
 import {
     useProperties,
     useDeleteProperty,
@@ -33,31 +23,14 @@ import {
 } from "@/lib/api/properties";
 import { toast } from "sonner";
 import { IconNotification } from "@/components/application/notifications/notifications";
-import type { NavItemType } from "@/components/application/app-navigation/config";
 
 // React Aria Modal Components
 import { ModalOverlay, Modal, Dialog } from "@/components/application/modals/modal";
 import { CloseButton } from "@/components/base/buttons/close-button";
-import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
-import { BackgroundPattern } from "@/components/shared-assets/background-patterns";
 import { Heading as AriaHeading } from "react-aria-components";
 
 // Pagination Component
 import { PaginationPageDefault } from "@/components/application/pagination/pagination";
-
-// ─── Nav Config (shared with dashboard) ──────────────────────────────────────
-
-const mainNavSections: Array<{ label: string; items: NavItemType[] }> = [
-    {
-        label: "Main",
-        items: [
-            { label: "Dashboard", href: "/dashboard", icon: HomeLine },
-            { label: "Properties", href: "/dashboard/properties", icon: Building01 },
-            { label: "Leads", href: "/dashboard/leads", icon: Users01 },
-            { label: "Settings", href: "/dashboard/settings", icon: Settings01 },
-        ],
-    },
-];
 
 // ─── Status Badge Map ─────────────────────────────────────────────────────────
 
@@ -191,8 +164,6 @@ const SkeletonRow = ({ id }: { id: string }) => (
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function PropertiesPage() {
-    const pathname = usePathname();
-    const { logout } = useAuth();
 
     const [params, setParams] = useState<PropertyQueryParams>({
         status: "all",
@@ -240,26 +211,7 @@ export default function PropertiesPage() {
     const properties = data?.results ?? [];
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-            {/* Sidebar */}
-            <AppSidebar
-                activeUrl={pathname}
-                sections={mainNavSections}
-                footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                footerItems={[
-                    { label: "Logout", icon: LogOut01, onClick: () => logout() },
-                ]}
-                showAccountCard={false}
-            />
-
-            {/* Main */}
-            <main className="flex flex-1 flex-col min-w-0">
-                {/* Header */}
-                <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                    <DashboardHeader />
-                </div>
-
-                <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
+        <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
                     {/* Page Title + Add Button */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
@@ -432,8 +384,6 @@ export default function PropertiesPage() {
                             </div>
                         )}
                     </TableCard.Root>
-                </div>
-            </main>
 
             {/* Delete Confirmation Modal */}
             {propertyToDelete && (
@@ -454,14 +404,6 @@ export default function PropertiesPage() {
                                     className="absolute top-3 right-3"
                                 />
                                 <div className="flex flex-col gap-4 px-4 pt-5 sm:px-6 sm:pt-6">
-                                    <div className="relative w-max">
-                                        <FeaturedIcon color="error" size="lg" theme="light" icon={Trash01} />
-                                        <BackgroundPattern
-                                            pattern="circle"
-                                            size="sm"
-                                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                                        />
-                                    </div>
                                     <div className="z-10 flex flex-col gap-0.5">
                                         <AriaHeading slot="title" className="text-md font-semibold text-primary">
                                             Delete property listing

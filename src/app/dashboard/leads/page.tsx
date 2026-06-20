@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import {
     Building01,
     Users01,
-    LogOut01,
-    HomeLine,
     SearchLg,
     Eye,
     MessageSquare02,
@@ -13,20 +12,18 @@ import {
     Mail01,
     Building02,
     File02,
-    Settings01,
+    Plus,
 } from "@untitledui/icons";
-import { usePathname } from "next/navigation";
-import { AppSidebar } from "@/components/app/app-sidebar";
-import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
-import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 import { Table, TableCard } from "@/components/application/table/table";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
-import { useAuth } from "@/contexts/auth-context";
+import { Input } from "@/components/base/input/input";
+import { Select } from "@/components/base/select/select";
 import {
     useLeads,
     useUpdateLead,
+    useCreateLead,
     type Lead,
     type LeadStatus,
     type LeadType,
@@ -34,13 +31,10 @@ import {
 } from "@/lib/api/leads";
 import { toast } from "sonner";
 import { IconNotification } from "@/components/application/notifications/notifications";
-import type { NavItemType } from "@/components/application/app-navigation/config";
 
 // React Aria Modal Components
 import { ModalOverlay, Modal, Dialog } from "@/components/application/modals/modal";
 import { CloseButton } from "@/components/base/buttons/close-button";
-import { FeaturedIcon } from "@/components/foundations/featured-icon/featured-icon";
-import { BackgroundPattern } from "@/components/shared-assets/background-patterns";
 import { Heading as AriaHeading } from "react-aria-components";
 
 // Pagination Component
@@ -48,18 +42,6 @@ import { PaginationPageDefault } from "@/components/application/pagination/pagin
 
 const BUYER_TYPES: LeadType[] = ['Property Enquiry', 'Mortgage Lead'];
 const SELLER_TYPES: LeadType[] = ['Valuation Lead', 'Insurance Lead', 'General Enquiry'];
-
-const mainNavSections: Array<{ label: string; items: NavItemType[] }> = [
-    {
-        label: "Main",
-        items: [
-            { label: "Dashboard", href: "/dashboard", icon: HomeLine },
-            { label: "Properties", href: "/dashboard/properties", icon: Building01 },
-            { label: "Leads", href: "/dashboard/leads", icon: Users01 },
-            { label: "Settings", href: "/dashboard/settings", icon: Settings01 },
-        ],
-    },
-];
 
 const STATUS_FILTERS: Array<{ label: string; value: LeadStatus | "" }> = [
     { label: "All Statuses", value: "" },
@@ -106,12 +88,19 @@ const SkeletonRow = ({ id }: { id: string }) => (
     </Table.Row>
 );
 
-export default function LeadsPage() {
-    const pathname = usePathname();
-    const { logout } = useAuth();
+interface AddLeadFormData {
+    name: string;
+    email: string;
+    phone?: string;
+    type: LeadType;
+    status: LeadStatus;
+    message?: string;
+}
 
+export default function LeadsPage() {
     const [activeTab, setActiveTab] = useState<'buyer' | 'seller'>('buyer');
     const [searchEmail, setSearchEmail] = useState("");
+    const [isAddOpen, setIsAddOpen] = useState(false);
     const [params, setParams] = useState<LeadQueryParams>({
         page: 1,
         limit: 20,
@@ -136,6 +125,56 @@ export default function LeadsPage() {
     });
     
     const updateLeadMutation = useUpdateLead();
+    const createLeadMutation = useCreateLead();
+
+    const addLeadForm = useForm<AddLeadFormData>({
+        defaultValues: {
+            name: "",
+            email: "",
+            phone: "",
+            type: "Property Enquiry",
+            status: "New",
+            message: "",
+        },
+    });
+
+    const handleAddLead = (data: AddLeadFormData) => {
+        createLeadMutation.mutate(
+            {
+                name: data.name,
+                email: data.email,
+                phone: data.phone || undefined,
+                type: data.type,
+                status: data.status,
+                message: data.message || undefined,
+            },
+            {
+                onSuccess: () => {
+                    toast.custom((t) => (
+                        <IconNotification
+                            title="Lead Created"
+                            description="New lead has been added successfully."
+                            color="success"
+                            onClose={() => toast.dismiss(t)}
+                        />
+                    ));
+                    setIsAddOpen(false);
+                    addLeadForm.reset();
+                    refetch();
+                },
+                onError: (err: any) => {
+                    toast.custom((t) => (
+                        <IconNotification
+                            title="Failed to Create Lead"
+                            description={err.response?.data?.message || err.message || "Something went wrong."}
+                            color="error"
+                            onClose={() => toast.dismiss(t)}
+                        />
+                    ));
+                },
+            }
+        );
+    };
 
     const handleSearchChange = (val: string) => {
         setSearchEmail(val);
@@ -180,34 +219,25 @@ export default function LeadsPage() {
     const leads = data?.results ?? [];
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-            {/* Sidebar */}
-            <AppSidebar
-                activeUrl={pathname}
-                sections={mainNavSections}
-                footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                footerItems={[
-                    { label: "Logout", icon: LogOut01, onClick: () => logout() },
-                ]}
-                showAccountCard={false}
-            />
-
-            {/* Main */}
-            <main className="flex flex-1 flex-col min-w-0">
-                {/* Header */}
-                <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                    <DashboardHeader />
-                </div>
-
-                <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
+        <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
                     {/* Page Title */}
-                    <div className="flex flex-col gap-1 border-b border-secondary pb-5">
-                        <h1 className="text-xl font-semibold text-primary lg:text-display-xs">
-                            Leads Management
-                        </h1>
-                        <p className="text-sm text-tertiary">
-                            {totalResults} {totalResults === 1 ? "lead" : "leads"} total
-                        </p>
+                    <div className="flex items-center justify-between gap-4 border-b border-secondary pb-5">
+                        <div className="flex flex-col gap-1">
+                            <h1 className="text-xl font-semibold text-primary lg:text-display-xs">
+                                Leads Management
+                            </h1>
+                            <p className="text-sm text-tertiary">
+                                {totalResults} {totalResults === 1 ? "lead" : "leads"} total
+                            </p>
+                        </div>
+                        <Button
+                            color="primary"
+                            size="md"
+                            iconLeading={Plus}
+                            onClick={() => setIsAddOpen(true)}
+                        >
+                            Add Lead
+                        </Button>
                     </div>
 
                     {/* Lead Category Tabs */}
@@ -407,9 +437,6 @@ export default function LeadsPage() {
                             </div>
                         )}
                     </TableCard.Root>
-                </div>
-            </main>
-
             {/* View Details Drawer/Modal */}
             {selectedLead && (
                 <ModalOverlay
@@ -431,14 +458,6 @@ export default function LeadsPage() {
 
                                 <div className="px-6 pt-6 pb-4 border-b border-secondary">
                                     <div className="flex items-center gap-3">
-                                        <div className="relative">
-                                            <FeaturedIcon color="brand" size="lg" theme="light" icon={Users01} />
-                                            <BackgroundPattern
-                                                pattern="circle"
-                                                size="sm"
-                                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                                            />
-                                        </div>
                                         <div>
                                             <AriaHeading slot="title" className="text-md font-semibold text-primary">
                                                 {selectedLead.name}
@@ -583,6 +602,186 @@ export default function LeadsPage() {
                     </Modal>
                 </ModalOverlay>
             )}
+
+            {/* Add Lead Modal */}
+            <ModalOverlay
+                isOpen={isAddOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setIsAddOpen(false);
+                        addLeadForm.reset();
+                    }
+                }}
+                isDismissable
+            >
+                <Modal>
+                    <Dialog>
+                        <div className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-primary shadow-xl border border-secondary text-left">
+                            <CloseButton
+                                onClick={() => {
+                                    setIsAddOpen(false);
+                                    addLeadForm.reset();
+                                }}
+                                theme="light"
+                                size="lg"
+                                className="absolute top-4 right-4"
+                            />
+
+                            <div className="px-6 pt-6 pb-4 border-b border-secondary">
+                                <AriaHeading slot="title" className="text-md font-semibold text-primary">
+                                    Add New Lead
+                                </AriaHeading>
+                                <p className="text-sm text-tertiary mt-0.5">
+                                    Manually create a lead record in the system.
+                                </p>
+                            </div>
+
+                            <form
+                                onSubmit={addLeadForm.handleSubmit(handleAddLead)}
+                                className="p-6 space-y-4"
+                            >
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Controller
+                                        name="name"
+                                        control={addLeadForm.control}
+                                        rules={{ required: "Name is required" }}
+                                        render={({ field, fieldState: { error } }) => (
+                                            <Input
+                                                {...field}
+                                                label="Full Name"
+                                                placeholder="Jane Doe"
+                                                isInvalid={!!error}
+                                                hint={error?.message}
+                                            />
+                                        )}
+                                    />
+                                    <Controller
+                                        name="phone"
+                                        control={addLeadForm.control}
+                                        render={({ field, fieldState: { error } }) => (
+                                            <Input
+                                                {...field}
+                                                label="Phone (optional)"
+                                                placeholder="+44 7700 900000"
+                                                isInvalid={!!error}
+                                                hint={error?.message}
+                                            />
+                                        )}
+                                    />
+                                </div>
+
+                                <Controller
+                                    name="email"
+                                    control={addLeadForm.control}
+                                    rules={{
+                                        required: "Email is required",
+                                        pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" },
+                                    }}
+                                    render={({ field, fieldState: { error } }) => (
+                                        <Input
+                                            {...field}
+                                            label="Email Address"
+                                            placeholder="jane@example.com"
+                                            isInvalid={!!error}
+                                            hint={error?.message}
+                                        />
+                                    )}
+                                />
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Controller
+                                        name="type"
+                                        control={addLeadForm.control}
+                                        rules={{ required: "Type is required" }}
+                                        render={({ field: { value, onChange }, fieldState: { error } }) => (
+                                            <Select
+                                                label="Lead Type"
+                                                placeholder="Select type…"
+                                                selectedKey={value}
+                                                onSelectionChange={(k) => onChange(k as LeadType)}
+                                                isInvalid={!!error}
+                                                hint={error?.message}
+                                                items={[
+                                                    { id: "Property Enquiry", label: "Property Enquiry" },
+                                                    { id: "Mortgage Lead", label: "Mortgage Lead" },
+                                                    { id: "Valuation Lead", label: "Valuation Lead" },
+                                                    { id: "Insurance Lead", label: "Insurance Lead" },
+                                                    { id: "General Enquiry", label: "General Enquiry" },
+                                                ]}
+                                            >
+                                                {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+                                            </Select>
+                                        )}
+                                    />
+                                    <Controller
+                                        name="status"
+                                        control={addLeadForm.control}
+                                        rules={{ required: "Status is required" }}
+                                        render={({ field: { value, onChange }, fieldState: { error } }) => (
+                                            <Select
+                                                label="Initial Status"
+                                                placeholder="Select status…"
+                                                selectedKey={value}
+                                                onSelectionChange={(k) => onChange(k as LeadStatus)}
+                                                isInvalid={!!error}
+                                                hint={error?.message}
+                                                items={STATUS_FILTERS.filter((f) => f.value !== "").map((f) => ({ id: f.value, label: f.label }))}
+                                            >
+                                                {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+                                            </Select>
+                                        )}
+                                    />
+                                </div>
+
+                                <Controller
+                                    name="message"
+                                    control={addLeadForm.control}
+                                    render={({ field, fieldState: { error } }) => (
+                                        <div className="flex flex-col gap-1.5">
+                                            <label className="text-sm font-medium text-secondary">
+                                                Message <span className="text-tertiary font-normal">(optional)</span>
+                                            </label>
+                                            <textarea
+                                                {...field}
+                                                rows={3}
+                                                placeholder="Add a note or message from the lead…"
+                                                className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-primary placeholder:text-placeholder bg-primary resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-colors ${
+                                                    error ? "border-error-300 focus:border-error-500" : "border-secondary focus:border-brand-500"
+                                                }`}
+                                            />
+                                            {error && (
+                                                <p className="text-xs text-error-primary">{error.message}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                />
+
+                                <div className="flex justify-end gap-3 pt-2 border-t border-secondary">
+                                    <Button
+                                        color="secondary"
+                                        size="md"
+                                        type="button"
+                                        onClick={() => {
+                                            setIsAddOpen(false);
+                                            addLeadForm.reset();
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        color="primary"
+                                        size="md"
+                                        type="submit"
+                                        isLoading={createLeadMutation.isPending}
+                                    >
+                                        Create Lead
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </Dialog>
+                </Modal>
+            </ModalOverlay>
         </div>
     );
 }

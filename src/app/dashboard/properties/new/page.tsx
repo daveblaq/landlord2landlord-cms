@@ -2,25 +2,18 @@
 
 import React from "react";
 import { useForm, Controller } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
     ArrowLeft,
     Save01,
-    Building01,
-    Users01,
-    LogOut01,
-    HomeLine,
     Trash01,
     Plus,
-    Settings01,
 } from "@untitledui/icons";
 
 import { useCreateProperty, useUploadPropertyImages } from "@/lib/api/properties";
-import { useAuth } from "@/contexts/auth-context";
 import { Input } from "@/components/base/input/input";
 import { Label } from "@/components/base/input/label";
 import { HintText } from "@/components/base/input/hint-text";
@@ -31,9 +24,6 @@ import { DatePicker } from "@/components/application/date-picker/date-picker";
 import { parseDate } from "@internationalized/date";
 import { Button } from "@/components/base/buttons/button";
 import { IconNotification } from "@/components/application/notifications/notifications";
-import { AppSidebar } from "@/components/app/app-sidebar";
-import { DashboardHeader } from "@/components/application/page-headers/dashboard-header";
-import { ThemeToggle } from "@/components/application/app-navigation/base-components/theme-toggle";
 
 // Yup validation schema matching backend rules (except heroImage, which is handled as file upload)
 const propertySchema = yup.object().shape({
@@ -163,39 +153,19 @@ const propertySchema = yup.object().shape({
     isFeatured: yup
         .boolean()
         .default(false),
+    isHighYield: yup
+        .boolean()
+        .default(false),
     status: yup
         .string()
         .oneOf(["draft", "pending-review", "published", "under-offer", "sold", "archived"])
         .default("draft")
 });
 
-const mainNavSections = [
-    {
-        label: "Main",
-        items: [
-            {
-                label: "Dashboard",
-                href: "/dashboard",
-                icon: HomeLine,
-            },
-            {
-                label: "Properties",
-                href: "/dashboard/properties",
-                icon: Building01,
-            },
-            {
-                label: "Leads",
-                href: "/dashboard/leads",
-                icon: Users01,
-            },
-        ],
-    },
-];
+
 
 export default function NewPropertyPage() {
     const router = useRouter();
-    const pathname = usePathname();
-    const { logout } = useAuth();
     
     // Mutation Hooks
     const createPropertyMutation = useCreateProperty();
@@ -241,6 +211,7 @@ export default function NewPropertyPage() {
             epc: "",
             displayOnHomepage: false,
             isFeatured: false,
+            isHighYield: false,
             status: "draft"
         }
     });
@@ -352,6 +323,7 @@ export default function NewPropertyPage() {
             epc: formData.epc || undefined,
             displayOnHomepage: formData.displayOnHomepage,
             isFeatured: formData.isFeatured,
+            isHighYield: formData.isHighYield,
             status: formData.status,
         };
 
@@ -384,26 +356,7 @@ export default function NewPropertyPage() {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
-            {/* Sidebar */}
-            <AppSidebar
-                activeUrl={pathname}
-                sections={mainNavSections}
-                footerContent={(collapsed) => <ThemeToggle collapsed={collapsed} />}
-                footerItems={[
-                    { label: "Logout", icon: LogOut01, onClick: () => logout() },
-                ]}
-                showAccountCard={false}
-            />
-
-            {/* Main */}
-            <main className="flex flex-1 flex-col min-w-0">
-                {/* Header */}
-                <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
-                    <DashboardHeader />
-                </div>
-
-                <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
+        <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
                     {/* Page Title + Breadcrumbs / Actions */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-secondary pb-5">
                         <div>
@@ -937,7 +890,20 @@ export default function NewPropertyPage() {
                                             isSelected={field.value}
                                             onChange={field.onChange}
                                             label="Featured Property"
-                                            hint="Mark as a featured investment — highlighted with a badge across the site."
+                                            hint="Highlight this property across the site."
+                                        />
+                                    )}
+                                />
+
+                                <Controller
+                                    name="isHighYield"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Toggle
+                                            isSelected={field.value}
+                                            onChange={field.onChange}
+                                            label="Expert High Yield"
+                                            hint={'Show the "Expert High Yield" badge on this listing.'}
                                         />
                                     )}
                                 />
@@ -1028,10 +994,8 @@ export default function NewPropertyPage() {
                                     Cancel
                                 </Button>
                             </div>
-                        </div>
-                    </form>
                 </div>
-            </main>
+            </form>
         </div>
     );
 }

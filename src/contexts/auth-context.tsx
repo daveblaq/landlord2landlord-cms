@@ -11,10 +11,7 @@ import { GlobalLoader } from '@/components/global-loader';
 // Modal and UI Components
 import { ModalOverlay, Modal, Dialog } from '@/components/application/modals/modal';
 import { CloseButton } from '@/components/base/buttons/close-button';
-import { FeaturedIcon } from '@/components/foundations/featured-icon/featured-icon';
-import { BackgroundPattern } from '@/components/shared-assets/background-patterns';
 import { Heading as AriaHeading } from 'react-aria-components';
-import { LogOut01 } from '@untitledui/icons';
 import { Button } from '@/components/base/buttons/button';
 import { toast } from 'sonner';
 import { IconNotification } from '@/components/application/notifications/notifications';
@@ -201,14 +198,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                                     className="absolute top-3 right-3"
                                 />
                                 <div className="flex flex-col gap-4 px-4 pt-5 sm:px-6 sm:pt-6">
-                                    <div className="relative w-max">
-                                        <FeaturedIcon color="error" size="lg" theme="light" icon={LogOut01} />
-                                        <BackgroundPattern
-                                            pattern="circle"
-                                            size="sm"
-                                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                                        />
-                                    </div>
                                     <div className="z-10 flex flex-col gap-0.5">
                                         <AriaHeading slot="title" className="text-md font-semibold text-primary">
                                             Log out

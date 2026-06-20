@@ -22,6 +22,11 @@ export const API_ENDPOINTS = {
     STATS: '/stats',
     // Activities
     ACTIVITIES: '/activities',
+    // Concierges
+    CONCIERGES: {
+        BASE: '/concierges',
+        DETAIL: (id: string) => `/concierges/${id}`,
+    },
 } as const;
 
 // API Response Types
