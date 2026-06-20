@@ -1,5 +1,6 @@
 "use client";
 
+import DOMPurify from "dompurify";
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -307,7 +308,7 @@ function LeadNotesSection({ lead }: { lead: Lead }) {
                                         {/* Note body rendering rich HTML text */}
                                         <div
                                             className="p-4 text-sm text-secondary bg-primary leading-relaxed whitespace-normal rich-text-content [&_ul]:list-disc [&_ul]:ml-6 [&_ol]:list-decimal [&_ol]:ml-6 [&_strong]:font-bold [&_em]:italic [&_u]:underline [&_a]:text-brand-600 [&_a]:underline hover:[&_a]:text-brand-700 [&_blockquote]:border-l-4 [&_blockquote]:border-secondary [&_blockquote]:pl-4 [&_blockquote]:my-3.5 [&_blockquote]:italic [&_blockquote]:text-tertiary [&_code]:bg-secondary_subtle [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:font-mono [&_code]:text-xs [&_pre]:bg-secondary_subtle [&_pre]:p-3 [&_pre]:rounded [&_pre]:font-mono [&_pre]:text-xs [&_pre]:my-2 [&_pre]:overflow-x-auto [&_p]:mb-2 last:[&_p]:mb-0"
-                                            dangerouslySetInnerHTML={{ __html: note.content }}
+                                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(note.content, { USE_PROFILES: { html: true } }) }}
                                         />
 
                                         {/* Status Snapshot Footer */}
