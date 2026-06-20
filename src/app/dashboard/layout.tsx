@@ -32,6 +32,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const { logout } = useAuth();
 
+    const isDashboardHome = pathname === "/dashboard" || pathname === "/dashboard/";
+
     return (
         <div className="flex flex-col lg:flex-row min-h-dvh bg-primary">
             {/* Sidebar */}
@@ -46,13 +48,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             />
 
             {/* Main content area */}
-            <main className="flex flex-1 flex-col min-w-0">
+            <main className="flex flex-1 flex-col lg:h-dvh lg:overflow-hidden min-w-0">
                 {/* Header */}
-                <div className="px-4 pt-6 pb-0 md:px-8 lg:pt-8">
+                <div className={`px-4 pt-6 md:px-8 lg:pt-8 bg-primary z-10 shrink-0 ${isDashboardHome ? "pb-0" : "pb-4 border-b border-secondary hidden lg:block"}`}>
                     <DashboardHeader />
                 </div>
                 
-                {children}
+                {/* Scrollable page content */}
+                <div className="flex-1 lg:overflow-y-auto">
+                    {children}
+                </div>
             </main>
         </div>
     );

@@ -47,6 +47,8 @@ export interface Property {
     status: PropertyStatus;
     displayOnHomepage: boolean;
     isFeatured: boolean;
+    isHighYield?: boolean;
+    createdBy?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -63,6 +65,7 @@ export interface PropertyQueryParams {
     sortBy?: 'Newest' | 'Highest Yield' | 'Lowest Price' | 'Highest Price';
     limit?: number;
     page?: number;
+    createdBy?: string;
 }
 
 export interface PropertiesResponse {
@@ -81,6 +84,8 @@ export const propertyKeys = {
     all: ['properties'] as const,
     lists: () => [...propertyKeys.all, 'list'] as const,
     list: (params: PropertyQueryParams) => [...propertyKeys.lists(), params] as const,
+    stats: () => [...propertyKeys.all, 'stats'] as const,
+    stat: (params: PropertyQueryParams) => [...propertyKeys.stats(), params] as const,
     detail: (id: string) => [...propertyKeys.all, 'detail', id] as const,
 };
 
@@ -100,6 +105,26 @@ export const useProperties = (
         queryFn: async () => {
             const response = await apiClient.get<ApiResponse<PropertiesResponse>>(
                 API_ENDPOINTS.PROPERTIES.BASE,
+                { params }
+            );
+            return response.data.data;
+        },
+        ...options,
+    });
+};
+
+/**
+ * Fetch status counts/statistics for properties
+ */
+export const usePropertyStats = (
+    params: PropertyQueryParams = {},
+    options?: Partial<UseQueryOptions<Record<PropertyStatus, number>, Error>>
+) => {
+    return useQuery<Record<PropertyStatus, number>, Error>({
+        queryKey: propertyKeys.stat(params),
+        queryFn: async () => {
+            const response = await apiClient.get<ApiResponse<Record<PropertyStatus, number>>>(
+                `${API_ENDPOINTS.PROPERTIES.BASE}/stats`,
                 { params }
             );
             return response.data.data;
@@ -147,6 +172,7 @@ export const useCreateProperty = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: propertyKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: propertyKeys.stats() });
         },
     });
 };
@@ -166,6 +192,7 @@ export const useUpdateProperty = () => {
         },
         onSuccess: (_data, { id }) => {
             queryClient.invalidateQueries({ queryKey: propertyKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: propertyKeys.stats() });
             queryClient.invalidateQueries({ queryKey: propertyKeys.detail(id) });
         },
     });
@@ -183,6 +210,7 @@ export const useDeleteProperty = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: propertyKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: propertyKeys.stats() });
         },
     });
 };

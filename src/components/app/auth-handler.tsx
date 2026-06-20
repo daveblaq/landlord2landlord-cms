@@ -9,7 +9,7 @@ export function AuthHandler() {
 
     useEffect(() => {
         const handleAuthExpired = () => {
-            router.replace("/auth/login");
+            window.location.href = "/auth/login";
         };
 
         window.addEventListener(API_EVENTS.AUTH_EXPIRED, handleAuthExpired);

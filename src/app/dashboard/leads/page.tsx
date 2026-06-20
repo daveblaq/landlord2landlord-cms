@@ -13,6 +13,9 @@ import {
     Building02,
     File02,
     Plus,
+    DownloadCloud02,
+    UploadCloud02,
+    AlertCircle,
 } from "@untitledui/icons";
 import { Table, TableCard } from "@/components/application/table/table";
 import { Badge } from "@/components/base/badges/badges";
@@ -24,6 +27,9 @@ import {
     useLeads,
     useUpdateLead,
     useCreateLead,
+    useLeadStats,
+    fetchAllLeads,
+    useBulkCreateLeads,
     type Lead,
     type LeadStatus,
     type LeadType,
@@ -31,6 +37,7 @@ import {
 } from "@/lib/api/leads";
 import { toast } from "sonner";
 import { IconNotification } from "@/components/application/notifications/notifications";
+import { FileUpload } from "@/components/application/file-upload/file-upload-base";
 
 // React Aria Modal Components
 import { ModalOverlay, Modal, Dialog } from "@/components/application/modals/modal";
@@ -101,12 +108,340 @@ export default function LeadsPage() {
     const [activeTab, setActiveTab] = useState<'buyer' | 'seller'>('buyer');
     const [searchEmail, setSearchEmail] = useState("");
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
     const [params, setParams] = useState<LeadQueryParams>({
         page: 1,
         limit: 20,
         status: "",
         type: BUYER_TYPES,
     });
+
+    const [isBulkOpen, setIsBulkOpen] = useState(false);
+    const [parsedLeads, setParsedLeads] = useState<any[] | null>(null);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+    const [selectedFileSize, setSelectedFileSize] = useState<number>(0);
+
+    const bulkCreateMutation = useBulkCreateLeads();
+
+    const handleExportCSV = async () => {
+        setIsExporting(true);
+        try {
+            // Fetch unpaginated leads using the current filters
+            const allLeads = await fetchAllLeads({
+                status: params.status || undefined,
+                type: params.type,
+                email: searchEmail ? searchEmail : undefined,
+            });
+
+            if (allLeads.length === 0) {
+                toast.custom((t) => (
+                    <IconNotification
+                        title="No Leads to Export"
+                        description="There are no leads matching the current filters to export."
+                        color="warning"
+                        onClose={() => toast.dismiss(t)}
+                    />
+                ));
+                return;
+            }
+
+            // Headers for CSV
+            const headers = [
+                "Lead ID",
+                "Name",
+                "Email",
+                "Phone",
+                "Type",
+                "Status",
+                "Message",
+                "Property Form",
+                "Created At",
+            ];
+
+            // Helper to escape values for CSV
+            const escapeCSV = (val: any) => {
+                if (val === null || val === undefined) return "";
+                const str = String(val);
+                if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+                    return `"${str.replace(/"/g, '""')}"`;
+                }
+                return str;
+            };
+
+            // Map rows
+            const rows = allLeads.map((lead) => {
+                let propertyFormStr = "";
+                if (lead.metadata && typeof lead.metadata === "object") {
+                    propertyFormStr = Object.entries(lead.metadata)
+                        .map(([key, val]) => {
+                            const displayKey = key
+                                .replace(/([A-Z])/g, " $1")
+                                .replace(/^./, (str) => str.toUpperCase());
+                            return `${displayKey}: ${val}`;
+                        })
+                        .join(" | ");
+                }
+
+                return [
+                    lead._id || lead.id,
+                    lead.name,
+                    lead.email,
+                    lead.phone || "",
+                    lead.type,
+                    lead.status,
+                    lead.message || "",
+                    propertyFormStr,
+                    lead.createdAt,
+                ];
+            });
+
+            // Combine headers and rows
+            const csvContent = [
+                headers.join(","),
+                ...rows.map((row) => row.map(escapeCSV).join(",")),
+            ].join("\n");
+
+            // Trigger browser download
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            
+            const fileStatus = params.status ? String(params.status).replace(/\s+/g, "_").toLowerCase() : "all";
+            link.setAttribute(
+                "download",
+                `l2l_leads_${activeTab}_${fileStatus}_export_${new Date().toISOString().split('T')[0]}.csv`
+            );
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            toast.custom((t) => (
+                <IconNotification
+                    title="Export Successful"
+                    description={`Successfully exported ${allLeads.length} leads to CSV.`}
+                    color="success"
+                    onClose={() => toast.dismiss(t)}
+                />
+            ));
+        } catch (err: any) {
+            toast.custom((t) => (
+                <IconNotification
+                    title="Export Failed"
+                    description={err.message || "An error occurred during CSV generation."}
+                    color="error"
+                    onClose={() => toast.dismiss(t)}
+                />
+            ));
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const handleDownloadTemplate = () => {
+        const headers = [
+            "Name",
+            "Email",
+            "Phone"
+        ];
+        const rows = [
+            [
+                "John Doe",
+                "john.doe@example.com",
+                "+447700900077"
+            ],
+            [
+                "Jane Smith",
+                "jane.smith@example.com",
+                "+447700900088"
+            ]
+        ];
+
+        const csvContent = [
+            headers.join(","),
+            ...rows.map(row => row.map(val => {
+                const str = String(val);
+                if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+                    return `"${str.replace(/"/g, '""')}"`;
+                }
+                return str;
+            }).join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "l2l_bulk_leads_template.csv");
+        link.style.visibility = "hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const parseCSV = (text: string): string[][] => {
+        const lines: string[][] = [];
+        let row: string[] = [];
+        let inQuotes = false;
+        let currentValue = '';
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const nextChar = text[i + 1];
+
+            if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                    currentValue += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                row.push(currentValue.trim());
+                currentValue = '';
+            } else if ((char === '\r' || char === '\n') && !inQuotes) {
+                if (char === '\r' && nextChar === '\n') {
+                    i++;
+                }
+                row.push(currentValue.trim());
+                if (row.length > 1 || row[0] !== '') {
+                    lines.push(row);
+                }
+                row = [];
+                currentValue = '';
+            } else {
+                currentValue += char;
+            }
+        }
+        if (currentValue !== '' || row.length > 0) {
+            row.push(currentValue.trim());
+            lines.push(row);
+        }
+        return lines;
+    };
+
+    const handleFileDrop = (files: FileList) => {
+        const file = files[0];
+        if (!file) return;
+
+        setSelectedFileName(file.name);
+        setSelectedFileSize(file.size);
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target?.result as string;
+            if (!text) return;
+
+            const csvData = parseCSV(text);
+            if (csvData.length < 2) {
+                setValidationErrors(["CSV file must contain a header row and at least one lead row."]);
+                setParsedLeads(null);
+                return;
+            }
+
+            const headers = csvData[0].map(h => h.trim().toLowerCase());
+            const rows = csvData.slice(1);
+
+            const nameIndex = headers.indexOf("name");
+            const emailIndex = headers.indexOf("email");
+            const phoneIndex = headers.indexOf("phone");
+
+            if (nameIndex === -1 || emailIndex === -1) {
+                setValidationErrors(["CSV headers must include 'Name' and 'Email'."]);
+                setParsedLeads(null);
+                return;
+            }
+
+            const leadsToValidate: any[] = [];
+            const errors: string[] = [];
+
+            rows.forEach((row, idx) => {
+                if (row.length === 0 || (row.length === 1 && row[0] === "")) return; // Skip empty rows
+
+                const name = row[nameIndex] || "";
+                const email = row[emailIndex] || "";
+                const phone = phoneIndex !== -1 ? row[phoneIndex] : "";
+
+                const lead = {
+                    name,
+                    email,
+                    phone: phone || undefined,
+                    type: "General Enquiry",
+                    status: "New",
+                    metadata: {}
+                };
+
+                const rowErrors = validateLeadRow(lead, idx + 1);
+                if (rowErrors.length > 0) {
+                    errors.push(`Row ${idx + 2}: ${rowErrors.join(', ')}`);
+                }
+
+                leadsToValidate.push(lead);
+            });
+
+            setValidationErrors(errors);
+            setParsedLeads(leadsToValidate);
+        };
+        reader.readAsText(file);
+    };
+
+    const validateLeadRow = (lead: any, rowNum: number): string[] => {
+        const rowErrors: string[] = [];
+        if (!lead.name || lead.name.trim() === "") {
+            rowErrors.push("Name is required");
+        }
+        if (!lead.email || lead.email.trim() === "") {
+            rowErrors.push("Email is required");
+        } else {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(lead.email)) {
+                rowErrors.push("Invalid email address");
+            }
+        }
+        return rowErrors;
+    };
+
+
+
+
+    const handleBulkSubmit = () => {
+        if (!parsedLeads || validationErrors.length > 0) return;
+
+        bulkCreateMutation.mutate(parsedLeads, {
+            onSuccess: () => {
+                toast.custom((t) => (
+                    <IconNotification
+                        title="Bulk Upload Successful"
+                        description={`Successfully uploaded ${parsedLeads.length} leads.`}
+                        color="success"
+                        onClose={() => toast.dismiss(t)}
+                    />
+                ));
+                setIsBulkOpen(false);
+                setParsedLeads(null);
+                setValidationErrors([]);
+                setSelectedFileName(null);
+                refetch();
+            },
+            onError: (err: any) => {
+                const apiErrors = err.response?.data?.data?.errors;
+                if (Array.isArray(apiErrors)) {
+                    setValidationErrors(apiErrors);
+                } else {
+                    toast.custom((t) => (
+                        <IconNotification
+                            title="Upload Failed"
+                            description={err.response?.data?.message || err.message || "Something went wrong."}
+                            color="error"
+                            onClose={() => toast.dismiss(t)}
+                        />
+                    ));
+                }
+            }
+        });
+    };
 
     const handleTabChange = (tab: 'buyer' | 'seller') => {
         setActiveTab(tab);
@@ -117,12 +452,23 @@ export default function LeadsPage() {
         }));
     };
 
-    const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-
     const { data, isLoading, isError, refetch } = useLeads({
         ...params,
         email: searchEmail ? searchEmail : undefined
     });
+
+    const { data: statsData, isLoading: statsLoading } = useLeadStats({
+        type: params.type,
+        email: searchEmail ? searchEmail : undefined
+    });
+
+    const handleCardClick = (status: LeadStatus) => {
+        setParams(p => ({
+            ...p,
+            status: p.status === status ? "" : status,
+            page: 1
+        }));
+    };
     
     const updateLeadMutation = useUpdateLead();
     const createLeadMutation = useCreateLead();
@@ -194,10 +540,6 @@ export default function LeadsPage() {
                             onClose={() => toast.dismiss(t)}
                         />
                     ));
-                    // Update locally selected lead if it matches
-                    if (selectedLead && selectedLead._id === leadId) {
-                        setSelectedLead(updated);
-                    }
                     refetch();
                 },
                 onError: (err: any) => {
@@ -230,14 +572,62 @@ export default function LeadsPage() {
                                 {totalResults} {totalResults === 1 ? "lead" : "leads"} total
                             </p>
                         </div>
-                        <Button
-                            color="primary"
-                            size="md"
-                            iconLeading={Plus}
-                            onClick={() => setIsAddOpen(true)}
-                        >
-                            Add Lead
-                        </Button>
+                        <div className="flex items-center gap-3">
+                            <Button
+                                color="secondary"
+                                size="md"
+                                iconLeading={UploadCloud02}
+                                onClick={() => setIsBulkOpen(true)}
+                            >
+                                Bulk Upload
+                            </Button>
+                            <Button
+                                color="primary"
+                                size="md"
+                                iconLeading={Plus}
+                                onClick={() => setIsAddOpen(true)}
+                            >
+                                Add Lead
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Metrics Cards Grid */}
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                        {[
+                            { status: "New" as const, label: "New", dotClass: "bg-brand-500" },
+                            { status: "Contacted" as const, label: "Contacted", dotClass: "bg-blue-500" },
+                            { status: "Qualified" as const, label: "Qualified", dotClass: "bg-success-500" },
+                            { status: "Viewing Scheduled" as const, label: "Viewing Scheduled", dotClass: "bg-warning-500" },
+                            { status: "Negotiating" as const, label: "Negotiating", dotClass: "bg-orange-500" },
+                            { status: "Closed" as const, label: "Closed", dotClass: "bg-utility-gray-500" },
+                        ].map((item) => {
+                            const count = statsData?.[item.status] ?? 0;
+                            const isSelected = params.status === item.status;
+                            return (
+                                <button
+                                    key={item.status}
+                                    onClick={() => handleCardClick(item.status)}
+                                    className={`text-left rounded-xl p-4 shadow-xs ring-1 ring-secondary ring-inset flex flex-col gap-1 transition-all duration-200 hover:shadow-md hover:ring-brand-500 bg-primary group cursor-pointer ${
+                                        isSelected ? "ring-2 ring-brand-500 bg-secondary_subtle" : ""
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between w-full">
+                                        <span className="text-xs font-semibold text-tertiary uppercase tracking-wider truncate mr-2">{item.label}</span>
+                                        <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${item.dotClass}`} />
+                                    </div>
+                                    <div className="flex items-baseline gap-2 mt-1">
+                                        <span className="text-2xl font-bold text-primary">
+                                            {statsLoading ? (
+                                                <span className="block h-8 w-12 rounded bg-secondary_hover animate-pulse mt-1" />
+                                            ) : (
+                                                count
+                                            )}
+                                        </span>
+                                    </div>
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Lead Category Tabs */}
@@ -266,22 +656,8 @@ export default function LeadsPage() {
 
                     {/* Filters Row */}
                     <div className="flex flex-col gap-4 bg-secondary_subtle p-4 rounded-xl border border-secondary">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                            {/* Search */}
-                            <div className="relative flex-1 max-w-sm">
-                                <SearchLg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-quaternary" />
-                                <input
-                                    type="text"
-                                    value={searchEmail}
-                                    onChange={(e) => handleSearchChange(e.target.value)}
-                                    placeholder="Search by email address…"
-                                    className="h-10 w-full rounded-lg border border-secondary bg-primary pl-9 pr-4 text-sm text-primary placeholder:text-placeholder focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                                />
-                            </div>
-                        </div>
-
                         {/* Status Filter Buttons */}
-                        <div className="flex items-center gap-2 flex-wrap border-t border-secondary pt-3">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs font-semibold text-tertiary uppercase tracking-wider mr-1">Status:</span>
                             {STATUS_FILTERS.map((f) => (
                                 <button
@@ -308,6 +684,31 @@ export default function LeadsPage() {
                                 activeTab === 'buyer'
                                     ? "Property enquiry and mortgage lead submissions"
                                     : "Valuation, insurance, and general enquiry submissions"
+                            }
+                            contentTrailing={
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                                    {/* Search */}
+                                    <div className="relative w-full sm:w-64">
+                                        <SearchLg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-quaternary" />
+                                        <input
+                                            type="text"
+                                            value={searchEmail}
+                                            onChange={(e) => handleSearchChange(e.target.value)}
+                                            placeholder="Search by email…"
+                                            className="h-10 w-full rounded-lg border border-secondary bg-primary pl-9 pr-4 text-sm text-primary placeholder:text-placeholder focus:border-brand-500/20"
+                                        />
+                                    </div>
+                                    <Button
+                                        color="secondary"
+                                        size="md"
+                                        iconLeading={DownloadCloud02}
+                                        onClick={handleExportCSV}
+                                        isLoading={isExporting}
+                                        isDisabled={isExporting}
+                                    >
+                                        Export CSV
+                                    </Button>
+                                </div>
                             }
                         />
 
@@ -391,7 +792,7 @@ export default function LeadsPage() {
                                                                 color="secondary"
                                                                 size="sm"
                                                                 iconLeading={Eye}
-                                                                onClick={() => setSelectedLead(lead)}
+                                                                href={`/dashboard/leads/${lead._id}`}
                                                             >
                                                                 View
                                                             </Button>
@@ -437,171 +838,6 @@ export default function LeadsPage() {
                             </div>
                         )}
                     </TableCard.Root>
-            {/* View Details Drawer/Modal */}
-            {selectedLead && (
-                <ModalOverlay
-                    isOpen={!!selectedLead}
-                    onOpenChange={(open) => {
-                        if (!open) setSelectedLead(null);
-                    }}
-                    isDismissable
-                >
-                    <Modal>
-                        <Dialog>
-                            <div className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-primary shadow-xl border border-secondary text-left">
-                                <CloseButton
-                                    onClick={() => setSelectedLead(null)}
-                                    theme="light"
-                                    size="lg"
-                                    className="absolute top-4 right-4"
-                                />
-
-                                <div className="px-6 pt-6 pb-4 border-b border-secondary">
-                                    <div className="flex items-center gap-3">
-                                        <div>
-                                            <AriaHeading slot="title" className="text-md font-semibold text-primary">
-                                                {selectedLead.name}
-                                            </AriaHeading>
-                                            <p className="text-xs text-tertiary">
-                                                Lead ID: {selectedLead._id}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="p-6 space-y-6 max-h-120 overflow-y-auto">
-                                    {/* Primary Info */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1 bg-secondary_subtle p-3 rounded-lg border border-secondary">
-                                            <span className="text-xs font-semibold text-tertiary uppercase tracking-wider flex items-center gap-1">
-                                                <Mail01 className="h-3.5 w-3.5 text-fg-quaternary" />
-                                                Email Address
-                                            </span>
-                                            <a href={`mailto:${selectedLead.email}`} className="text-sm font-semibold text-brand-700 hover:underline block truncate">
-                                                {selectedLead.email}
-                                            </a>
-                                        </div>
-                                        <div className="space-y-1 bg-secondary_subtle p-3 rounded-lg border border-secondary">
-                                            <span className="text-xs font-semibold text-tertiary uppercase tracking-wider flex items-center gap-1">
-                                                <Phone className="h-3.5 w-3.5 text-fg-quaternary" />
-                                                Phone Number
-                                            </span>
-                                            <span className="text-sm font-semibold text-primary block truncate">
-                                                {selectedLead.phone || "N/A"}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Enquiry Details */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-0.5">
-                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Lead Type</span>
-                                            <Badge color={
-                                                selectedLead.type === "Property Enquiry" ? "indigo" :
-                                                selectedLead.type === "Mortgage Lead" ? "orange" :
-                                                selectedLead.type === "Insurance Lead" ? "pink" :
-                                                selectedLead.type === "Valuation Lead" ? "purple" : "gray"
-                                            } size="sm" type="color">
-                                                {selectedLead.type}
-                                            </Badge>
-                                        </div>
-                                        <div className="space-y-0.5">
-                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Date Submitted</span>
-                                            <span className="text-sm font-semibold text-primary">
-                                                {new Date(selectedLead.createdAt).toLocaleDateString("en-GB", {
-                                                    day: "numeric",
-                                                    month: "short",
-                                                    year: "numeric",
-                                                    hour: "2-digit",
-                                                    minute: "2-digit"
-                                                })}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Enquiry Message */}
-                                    <div className="space-y-1.5">
-                                        <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider flex items-center gap-1">
-                                            <MessageSquare02 className="h-3.5 w-3.5 text-fg-quaternary" />
-                                            Enquiry Message
-                                        </span>
-                                        <div className="text-sm text-secondary bg-secondary p-4 rounded-lg border border-secondary whitespace-pre-wrap leading-relaxed">
-                                            {selectedLead.message || <span className="italic text-fg-disabled">No inquiry message provided.</span>}
-                                        </div>
-                                    </div>
-
-                                    {/* Metadata */}
-                                    {selectedLead.metadata && Object.keys(selectedLead.metadata).length > 0 && (
-                                        <div className="space-y-2">
-                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider flex items-center gap-1">
-                                                <File02 className="h-3.5 w-3.5 text-fg-quaternary" />
-                                                Form Metadata
-                                            </span>
-                                            <div className="grid grid-cols-2 gap-3 bg-secondary_subtle p-4 rounded-lg border border-secondary">
-                                                {Object.entries(selectedLead.metadata).map(([key, val]) => {
-                                                    let displayVal = String(val);
-                                                    if (key === "propertyId") {
-                                                        return (
-                                                            <div key={key} className="col-span-2 space-y-0.5 border-b border-secondary pb-2 mb-2 last:border-0 last:pb-0 last:mb-0">
-                                                                <span className="block text-xs text-tertiary capitalize">{key}</span>
-                                                                <a
-                                                                    href={`/dashboard/properties/${val}`}
-                                                                    className="text-sm font-semibold text-brand-700 hover:underline flex items-center gap-1.5"
-                                                                >
-                                                                    <Building02 className="h-4 w-4 shrink-0 text-fg-quaternary" />
-                                                                    View Property ({val})
-                                                                </a>
-                                                            </div>
-                                                        );
-                                                    }
-                                                    return (
-                                                        <div key={key} className="space-y-0.5">
-                                                            <span className="block text-xs text-tertiary capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                                                            <span className="text-sm font-semibold text-primary capitalize">{displayVal}</span>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Triage Selector */}
-                                    <div className="border-t border-secondary pt-5 flex flex-col gap-2">
-                                        <label className="text-xs font-semibold text-tertiary uppercase tracking-wider">
-                                            Update Triage Status
-                                        </label>
-                                        <div className="flex gap-2">
-                                            {Object.keys(statusBadgeConfig).map((st) => (
-                                                <button
-                                                    key={st}
-                                                    onClick={() => handleStatusChange(selectedLead._id, st as LeadStatus)}
-                                                    className={`rounded-lg border px-3 py-2 text-xs font-semibold transition-all duration-150 grow text-center ${
-                                                        selectedLead.status === st
-                                                            ? "bg-brand-500 border-brand-500 text-white shadow-xs"
-                                                            : "bg-primary border-secondary text-secondary hover:bg-secondary_hover"
-                                                    }`}
-                                                >
-                                                    {st}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end gap-3 p-4 px-6 border-t border-secondary bg-secondary_subtle">
-                                    <Button
-                                        color="secondary"
-                                        size="md"
-                                        onClick={() => setSelectedLead(null)}
-                                    >
-                                        Close
-                                    </Button>
-                                </div>
-                            </div>
-                        </Dialog>
-                    </Modal>
-                </ModalOverlay>
-            )}
 
             {/* Add Lead Modal */}
             <ModalOverlay
@@ -782,6 +1018,150 @@ export default function LeadsPage() {
                     </Dialog>
                 </Modal>
             </ModalOverlay>
+
+            {/* Bulk Upload Modal */}
+            <ModalOverlay
+                isOpen={isBulkOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setIsBulkOpen(false);
+                        setParsedLeads(null);
+                        setValidationErrors([]);
+                        setSelectedFileName(null);
+                    }
+                }}
+                isDismissable
+            >
+                <Modal>
+                    <Dialog>
+                        <div className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-primary shadow-xl border border-secondary text-left">
+                            <CloseButton
+                                onClick={() => {
+                                    setIsBulkOpen(false);
+                                    setParsedLeads(null);
+                                    setValidationErrors([]);
+                                    setSelectedFileName(null);
+                                }}
+                                theme="light"
+                                size="lg"
+                                className="absolute top-4 right-4"
+                            />
+
+                            <div className="px-6 pt-6 pb-4 border-b border-secondary">
+                                <AriaHeading slot="title" className="text-md font-semibold text-primary">
+                                    Bulk Upload Leads
+                                </AriaHeading>
+                                <p className="text-sm text-tertiary mt-0.5">
+                                    Import multiple leads using a CSV file.
+                                </p>
+                            </div>
+
+                            <div className="p-6 space-y-6">
+                                {/* Instructions & Download Template */}
+                                <div className="rounded-xl bg-secondary_subtle border border-secondary p-4 space-y-3">
+                                    <div className="text-sm text-secondary leading-relaxed">
+                                        Please download our CSV template to ensure your lead data matches our required formats, including conditional fields like Property ID, Budget, and Address.
+                                    </div>
+                                    <Button
+                                        color="secondary"
+                                        size="sm"
+                                        iconLeading={DownloadCloud02}
+                                        onClick={handleDownloadTemplate}
+                                    >
+                                        Download CSV Template
+                                    </Button>
+                                </div>
+
+                                {/* File Dropzone / Uploader */}
+                                <div className="space-y-1.5">
+                                    <label className="text-sm font-medium text-secondary">
+                                        CSV File
+                                    </label>
+                                    {!selectedFileName ? (
+                                        <FileUpload.DropZone
+                                            accept=".csv"
+                                            allowsMultiple={false}
+                                            onDropFiles={handleFileDrop}
+                                            hint="CSV files only (up to 10MB)"
+                                            maxSize={10 * 1024 * 1024}
+                                        />
+                                    ) : (
+                                        <div className="rounded-xl border border-secondary bg-primary p-4 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <File02 className="size-8 text-fg-quaternary" />
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-sm font-medium text-secondary truncate max-w-xs">{selectedFileName}</span>
+                                                    <span className="text-xs text-tertiary">{(selectedFileSize / 1024).toFixed(1)} KB</span>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                color="secondary"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedFileName(null);
+                                                    setParsedLeads(null);
+                                                    setValidationErrors([]);
+                                                }}
+                                            >
+                                                Change File
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Validation Feedback */}
+                                {validationErrors.length > 0 && (
+                                    <div className="rounded-xl border border-error-300 bg-error-50 dark:bg-error-950/20 dark:border-error-800 p-4 space-y-2">
+                                        <div className="flex items-center gap-2 text-error-primary text-sm font-semibold">
+                                            <AlertCircle className="size-4 shrink-0" />
+                                            <span>Validation errors detected ({validationErrors.length})</span>
+                                        </div>
+                                        <ul className="text-xs text-error-primary pl-5 list-disc max-h-40 overflow-y-auto space-y-1">
+                                            {validationErrors.map((err, i) => (
+                                                <li key={i}>{err}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {parsedLeads && validationErrors.length === 0 && (
+                                    <div className="rounded-xl border border-success-300 bg-success-50 dark:bg-success-950/20 dark:border-success-800 p-4 flex items-center gap-2 text-success-primary text-sm font-medium">
+                                        <span className="font-semibold">✓ Parsed {parsedLeads.length} leads successfully.</span>
+                                        <span>Ready for submission.</span>
+                                    </div>
+                                )}
+
+                                {/* Action Buttons */}
+                                <div className="flex justify-end gap-3 pt-2 border-t border-secondary">
+                                    <Button
+                                        color="secondary"
+                                        size="md"
+                                        type="button"
+                                        onClick={() => {
+                                            setIsBulkOpen(false);
+                                            setParsedLeads(null);
+                                            setValidationErrors([]);
+                                            setSelectedFileName(null);
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        color="primary"
+                                        size="md"
+                                        onClick={handleBulkSubmit}
+                                        isLoading={bulkCreateMutation.isPending}
+                                        isDisabled={!parsedLeads || validationErrors.length > 0 || bulkCreateMutation.isPending}
+                                    >
+                                        Submit Upload
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </Dialog>
+                </Modal>
+            </ModalOverlay>
         </div>
     );
 }
+

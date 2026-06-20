@@ -709,10 +709,12 @@
     /* BORDER COLORS */
     --color-border-secondary: var(--color-gray-200);
     --color-border-error_subtle: var(--color-error-300);
+    --color-border-warning_subtle: var(--color-warning-200);
     --color-border-primary: var(--color-gray-300);
     --color-border-brand: var(--color-brand-500);
     --color-border-disabled: var(--color-gray-300);
     --color-border-error: var(--color-error-500);
+    --color-border-warning: var(--color-warning-500);
     --color-border-disabled_subtle: var(--color-gray-200);
     --color-border-tertiary: var(--color-gray-100);
     --color-border-brand_alt: var(--color-brand-600);
@@ -878,9 +880,11 @@
     --border-color-brand-solid: var(--color-bg-brand-solid);
     --border-color-brand-solid_hover: var(--color-bg-brand-solid_hover);
     --border-color-error: var(--color-border-error);
+    --border-color-warning: var(--color-border-warning);
     --border-color-disabled_subtle: var(--color-border-disabled_subtle);
     --border-color-brand_alt: var(--color-border-brand_alt);
     --border-color-error_subtle: var(--color-border-error_subtle);
+    --border-color-warning_subtle: var(--color-border-warning_subtle);
 
     /* RING PROPERTY COLORS */
     --ring-color-bg-brand-solid: var(--color-bg-brand-solid);
@@ -1133,10 +1137,12 @@
         /* BORDER COLORS */
         --color-border-secondary: var(--color-gray-800);
         --color-border-error_subtle: var(--color-error-500);
+        --color-border-warning_subtle: var(--color-warning-800);
         --color-border-primary: var(--color-gray-700);
         --color-border-brand: var(--color-brand-400);
         --color-border-disabled: var(--color-gray-700);
         --color-border-error: var(--color-error-400);
+        --color-border-warning: var(--color-warning-700);
         --color-border-disabled_subtle: var(--color-gray-800);
         --color-border-tertiary: var(--color-gray-800);
         --color-border-brand_alt: var(--color-gray-700);
@@ -1306,9 +1312,11 @@
         --border-color-brand-solid: var(--color-bg-brand-solid);
         --border-color-brand-solid_hover: var(--color-bg-brand-solid_hover);
         --border-color-error: var(--color-border-error);
+        --border-color-warning: var(--color-border-warning);
         --border-color-disabled_subtle: var(--color-border-disabled_subtle);
         --border-color-brand_alt: var(--color-border-brand_alt);
         --border-color-error_subtle: var(--color-border-error_subtle);
+        --border-color-warning_subtle: var(--color-border-warning_subtle);
 
         /* RING PROPERTY COLORS */
         --ring-color-bg-brand-solid: var(--color-bg-brand-solid);

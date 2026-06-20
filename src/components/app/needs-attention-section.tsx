@@ -53,8 +53,8 @@ const NeedsAttentionLeadRow = ({ lead }: { lead: Lead }) => {
     return (
         <div className="flex items-center justify-between gap-3 py-2.5">
             <div className="flex min-w-0 items-center gap-2.5">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-warning-100">
-                    <Users01 className="h-3.5 w-3.5 text-warning-600" />
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-warning-500/10">
+                    <Users01 className="h-3.5 w-3.5 text-fg-warning-primary" />
                 </div>
                 <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-primary">{lead.name}</p>
@@ -81,8 +81,8 @@ const NeedsAttentionPropertyRow = ({ property }: { property: Property }) => {
     return (
         <div className="flex items-center justify-between gap-3 py-2.5">
             <div className="flex min-w-0 items-center gap-2.5">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-warning-100">
-                    <Building01 className="h-3.5 w-3.5 text-warning-600" />
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-warning-500/10">
+                    <Building01 className="h-3.5 w-3.5 text-fg-warning-primary" />
                 </div>
                 <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-primary">{property.title}</p>
@@ -93,7 +93,7 @@ const NeedsAttentionPropertyRow = ({ property }: { property: Property }) => {
             </div>
             <Link
                 href={`/dashboard/properties/${property._id}`}
-                className="shrink-0 text-sm font-medium text-warning-700 hover:underline"
+                className="shrink-0 text-sm font-medium text-text-warning-primary hover:text-fg-warning-primary hover:underline"
             >
                 View →
             </Link>
@@ -114,19 +114,19 @@ export const NeedsAttentionSection = ({ newLeads, pendingProperties }: NeedsAtte
 
     return (
         <section>
-            <div className="overflow-hidden rounded-xl border border-warning-200 bg-warning-50">
-                <div className="flex items-center gap-2 border-b border-warning-200 px-5 py-3.5">
-                    <AlertCircle className="h-4 w-4 shrink-0 text-warning-600" />
-                    <h2 className="text-sm font-semibold text-warning-700">Needs Attention</h2>
+            <div className="overflow-hidden rounded-xl border border-warning_subtle bg-bg-warning-primary">
+                <div className="flex items-center gap-2 border-b border-warning_subtle px-5 py-3.5">
+                    <AlertCircle className="h-4 w-4 shrink-0 text-fg-warning-primary" />
+                    <h2 className="text-sm font-semibold text-text-warning-primary">Needs Attention</h2>
                 </div>
 
-                <div className="divide-y divide-warning-200/60 px-5">
+                <div className="divide-y divide-warning_subtle/60 px-5">
                     {hasLeads && (
                         <div className="py-3">
-                            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-warning-600">
+                            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-text-warning-primary">
                                 {newLeads!.length} lead{newLeads!.length !== 1 ? "s" : ""} need follow-up
                             </p>
-                            <div className="divide-y divide-warning-100">
+                            <div className="divide-y divide-warning_subtle/30">
                                 {newLeads!.map((lead) => (
                                     <NeedsAttentionLeadRow key={lead._id} lead={lead} />
                                 ))}
@@ -136,10 +136,10 @@ export const NeedsAttentionSection = ({ newLeads, pendingProperties }: NeedsAtte
 
                     {hasProperties && (
                         <div className="py-3">
-                            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-warning-600">
+                            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-text-warning-primary">
                                 {pendingProperties!.length} propert{pendingProperties!.length !== 1 ? "ies" : "y"} awaiting review
                             </p>
-                            <div className="divide-y divide-warning-100">
+                            <div className="divide-y divide-warning_subtle/30">
                                 {pendingProperties!.map((property) => (
                                     <NeedsAttentionPropertyRow key={property._id} property={property} />
                                 ))}

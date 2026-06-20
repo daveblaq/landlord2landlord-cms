@@ -200,8 +200,13 @@ export const FileUploadDropZone = ({
             onDragLeave={handleDragOut}
             onDragEnd={handleDragOut}
             onDrop={handleDrop}
+            onClick={() => {
+                if (!isDisabled) {
+                    inputRef.current?.click();
+                }
+            }}
             className={cx(
-                "relative flex flex-col items-center gap-3 rounded-xl bg-primary px-6 py-4 text-tertiary ring-1 ring-secondary transition duration-100 ease-linear ring-inset",
+                "relative flex flex-col items-center gap-3 rounded-xl bg-primary px-6 py-4 text-tertiary ring-1 ring-secondary transition duration-100 ease-linear ring-inset cursor-pointer hover:bg-secondary_subtle/50",
                 isDraggingOver && "ring-2 ring-brand",
                 isDisabled && "cursor-not-allowed bg-disabled_subtle ring-disabled_subtle",
                 className,
@@ -212,7 +217,7 @@ export const FileUploadDropZone = ({
             </FeaturedIcon>
 
             <div className="flex flex-col gap-1 text-center">
-                <div className="flex justify-center gap-1 text-center">
+                <div className="flex justify-center items-center gap-1 text-center">
                     <input
                         ref={inputRef}
                         id={id}
@@ -223,11 +228,9 @@ export const FileUploadDropZone = ({
                         multiple={allowsMultiple}
                         onChange={handleInputFileChange}
                     />
-                    <label htmlFor={id} className="flex cursor-pointer">
-                        <Button color="link-color" size="md" isDisabled={isDisabled} onClick={() => inputRef.current?.click()}>
-                            Click to upload <span className="md:hidden">and attach files</span>
-                        </Button>
-                    </label>
+                    <span className="text-sm font-semibold text-brand-600 hover:text-brand-700">
+                        Click to upload
+                    </span>
                     <span className="text-sm max-md:hidden">or drag and drop</span>
                 </div>
                 <p className={cx("text-xs transition duration-100 ease-linear", isInvalid && "text-error-primary")}>

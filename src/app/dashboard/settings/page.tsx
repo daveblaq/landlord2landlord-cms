@@ -42,6 +42,7 @@ export default function SettingsPage() {
         control: profileControl,
         handleSubmit: handleProfileSubmit,
         reset: resetProfile,
+        formState: { isDirty: isProfileDirty },
     } = useForm({
         resolver: yupResolver(profileSchema),
         defaultValues: {
@@ -56,6 +57,7 @@ export default function SettingsPage() {
         control: passwordControl,
         handleSubmit: handlePasswordSubmit,
         reset: resetPassword,
+        formState: { isDirty: isPasswordDirty },
     } = useForm({
         resolver: yupResolver(passwordSchema),
         defaultValues: {
@@ -233,7 +235,7 @@ export default function SettingsPage() {
                                         color="primary"
                                         size="md"
                                         iconLeading={Save01}
-                                        isDisabled={updateProfileMutation.isPending}
+                                        isDisabled={updateProfileMutation.isPending || !isProfileDirty}
                                     >
                                         {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
                                     </Button>
@@ -304,7 +306,7 @@ export default function SettingsPage() {
                                         color="primary"
                                         size="md"
                                         iconLeading={Key01}
-                                        isDisabled={changePasswordMutation.isPending}
+                                        isDisabled={changePasswordMutation.isPending || !isPasswordDirty}
                                     >
                                         {changePasswordMutation.isPending ? "Updating..." : "Update Password"}
                                     </Button>

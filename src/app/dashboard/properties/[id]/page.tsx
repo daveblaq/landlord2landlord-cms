@@ -80,13 +80,28 @@ export default function ViewPropertyPage() {
                             >
                                 Back to Properties
                             </Button>
-                            <div className="flex items-center gap-3 mt-2">
+                            <div className="flex items-center gap-3 flex-wrap mt-2">
                                 <h1 className="text-xl font-semibold text-primary lg:text-display-xs">
                                     {property.title}
                                 </h1>
                                 <Badge color={status.color} size="md" type="pill-color">
                                     {status.label}
                                 </Badge>
+                                {property.isFeatured && (
+                                    <Badge color="brand" size="md" type="pill-color">
+                                        Featured
+                                    </Badge>
+                                )}
+                                {property.isHighYield && (
+                                    <Badge color="warning" size="md" type="pill-color">
+                                        Expert High Yield
+                                    </Badge>
+                                )}
+                                {new Date().getTime() - new Date(property.createdAt).getTime() < 7 * 24 * 60 * 60 * 1000 && (
+                                    <Badge color="success" size="md" type="pill-color">
+                                        New Listing
+                                    </Badge>
+                                )}
                             </div>
                             <div className="flex items-center gap-1.5 text-sm text-tertiary">
                                 <MarkerPin02 className="h-4 w-4 shrink-0 text-fg-quaternary" />
