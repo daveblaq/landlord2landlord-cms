@@ -250,7 +250,7 @@ export default function NewPropertyPage() {
             }
             setValue('epc', {
                 current: { score: json.currentScore, rating: json.currentBand },
-                ...(json.potentialScore ? { potential: { score: json.potentialScore, rating: json.potentialBand } } : {}),
+                ...(json.potentialBand ? { potential: { score: json.potentialScore, rating: json.potentialBand } } : {}),
                 certificateNumber: cert,
             } as any);
             setEpcAddressPreview([json.address, json.postcode].filter(Boolean).join(' '));

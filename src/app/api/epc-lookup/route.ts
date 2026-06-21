@@ -45,11 +45,20 @@ export async function GET(request: NextRequest) {
 
     const addressParts = [data.address_line_1, data.address_line_2, data.post_town].filter(Boolean);
 
+    // potential_energy_efficiency_band is the primary field; older schemas may
+    // only have potential_energy_efficiency_rating (same thing, different key)
+    const potentialBand =
+        data.potential_energy_efficiency_band ??
+        data.potential_energy_efficiency_rating ??
+        null;
+
+    const potentialScore = data.energy_rating_potential ?? null;
+
     return NextResponse.json({
         currentScore: data.energy_rating_current ?? null,
         currentBand: data.current_energy_efficiency_band ?? null,
-        potentialScore: data.energy_rating_potential ?? null,
-        potentialBand: data.potential_energy_efficiency_band ?? null,
+        potentialScore,
+        potentialBand,
         address: addressParts.join(', ') || null,
         postcode: data.postcode ?? null,
         certificateUrl: `https://find-energy-certificate.service.gov.uk/energy-certificate/${certificateNumber}`,
