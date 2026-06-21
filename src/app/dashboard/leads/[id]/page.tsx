@@ -236,19 +236,20 @@ function LeadNotesSection({ lead }: { lead: Lead }) {
             </h2>
 
             {/* Note Creation Form */}
-            <form onSubmit={handleAddNote} className="space-y-3">
+            <form onSubmit={handleAddNote} className="space-y-1">
                 <TextEditor.Root
                     key={editorKey}
                     placeholder="Type a new staff note/activity update here..."
                     onUpdate={({ editor }) => {
                         setNoteContent(editor.getHTML());
                     }}
+                    inputClassName="min-h-[120px]"
                 >
                     <TextEditor.Toolbar type="simple" />
-                    <TextEditor.Content className="min-h-[120px] bg-primary" />
+                    <TextEditor.Content />
                     <TextEditor.HintText />
                 </TextEditor.Root>
-                <div className="flex justify-end">
+                <div className="flex justify-start pt-2">
                     <Button
                         type="submit"
                         color="primary"
@@ -259,6 +260,12 @@ function LeadNotesSection({ lead }: { lead: Lead }) {
                     </Button>
                 </div>
             </form>
+
+            <div className="pt-4 border-t border-secondary">
+                <h3 className="text-xs font-semibold text-tertiary uppercase tracking-wider">
+                    All Notes ({notes.length})
+                </h3>
+            </div>
 
             {/* Accordion Notes List */}
             {notes.length === 0 ? (

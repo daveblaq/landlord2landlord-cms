@@ -48,6 +48,8 @@ export interface Property {
     displayOnHomepage: boolean;
     isFeatured: boolean;
     isHighYield?: boolean;
+    latitude?: number;
+    longitude?: number;
     createdBy?: string;
     createdAt: string;
     updatedAt: string;
@@ -151,6 +153,24 @@ export const useProperty = (
         enabled: !!idOrSlug,
         ...options,
     });
+};
+
+/**
+ * Lookup EPC Rating via backend proxy
+ */
+export const lookupEpcRating = async (postcode: string, address?: string): Promise<string | null> => {
+    try {
+        const response = await apiClient.get<ApiResponse<{ rating: string | null }>>(
+            `${API_ENDPOINTS.PROPERTIES.BASE}/epc-lookup`,
+            {
+                params: { postcode, address }
+            }
+        );
+        return response.data.data?.rating || null;
+    } catch (error) {
+        console.error("Failed to lookup EPC rating:", error);
+        return null;
+    }
 };
 
 // ============================================
