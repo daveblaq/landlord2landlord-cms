@@ -8,6 +8,12 @@ import { API_ENDPOINTS, ApiResponse } from './endpoints';
 
 export type PropertyStatus = 'draft' | 'pending-review' | 'published' | 'under-offer' | 'sold' | 'archived';
 
+export interface EpcData {
+    current: { score: number; rating: string };
+    potential?: { score: number; rating: string };
+    certificateNumber?: string;
+}
+
 export interface InvestmentMetrics {
     askingPrice: number;
     monthlyRent: number;
@@ -43,7 +49,7 @@ export interface Property {
     rentCollectionStatus?: string;
     arrearsStatus?: string;
     tenancyNotes?: string;
-    epc?: string;
+    epc?: EpcData;
     status: PropertyStatus;
     displayOnHomepage: boolean;
     isFeatured: boolean;

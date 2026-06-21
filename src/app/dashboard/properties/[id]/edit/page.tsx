@@ -14,6 +14,7 @@ import {
     Building02,
 } from "@untitledui/icons";
 import { useProperty, useUpdateProperty, useUploadPropertyImages, type Property } from "@/lib/api/properties";
+import { EpcChart } from "@/components/property/epc-chart";
 import { Input } from "@/components/base/input/input";
 import { Label } from "@/components/base/input/label";
 import { HintText } from "@/components/base/input/hint-text";
@@ -142,9 +143,8 @@ const propertySchema = yup.object().shape({
         .transform((value, originalValue) => originalValue === "" ? null : value)
         .optional(),
     epc: yup
-        .string()
+        .mixed()
         .nullable()
-        .transform((value, originalValue) => originalValue === "" ? null : value)
         .optional(),
     displayOnHomepage: yup
         .boolean()
@@ -189,6 +189,7 @@ export default function EditPropertyPage() {
         handleSubmit,
         watch,
         reset,
+        setValue,
         formState: { isSubmitting }
     } = useForm({
         resolver: yupResolver(propertySchema),
@@ -217,7 +218,7 @@ export default function EditPropertyPage() {
             rentCollectionStatus: null,
             arrearsStatus: "no-arrears",
             tenancyNotes: "",
-            epc: "",
+            epc: undefined as any,
             displayOnHomepage: false,
             isFeatured: false,
             status: "draft"
@@ -225,6 +226,55 @@ export default function EditPropertyPage() {
     });
 
     const isTenented = watch("tenented");
+    const watchedEpc = watch("epc") as any;
+
+    const watchedPrice = watch("askingPrice");
+    const watchedRent = watch("monthlyRent");
+    const liveGrossYield =
+        watchedPrice > 0 && watchedRent > 0
+            ? +((watchedRent * 12) / watchedPrice * 100).toFixed(2)
+            : null;
+
+    // EPC lookup state
+    const [epcCertInput, setEpcCertInput] = useState('');
+    const [epcLookupStatus, setEpcLookupStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [epcLookupError, setEpcLookupError] = useState<string | null>(null);
+    const [epcAddressPreview, setEpcAddressPreview] = useState<string | null>(null);
+
+    const handleEpcLookup = async () => {
+        const cert = epcCertInput.trim();
+        if (!cert) return;
+        setEpcLookupStatus('loading');
+        setEpcLookupError(null);
+        setEpcAddressPreview(null);
+        try {
+            const res = await fetch(`/api/epc-lookup?certificateNumber=${encodeURIComponent(cert)}`);
+            const json = await res.json();
+            if (!res.ok) {
+                setEpcLookupStatus('error');
+                setEpcLookupError(json.error || 'Certificate not found');
+                return;
+            }
+            setValue('epc', {
+                current: { score: json.currentScore, rating: json.currentBand },
+                ...(json.potentialScore ? { potential: { score: json.potentialScore, rating: json.potentialBand } } : {}),
+                certificateNumber: cert,
+            } as any);
+            setEpcAddressPreview([json.address, json.postcode].filter(Boolean).join(' '));
+            setEpcLookupStatus('success');
+        } catch {
+            setEpcLookupStatus('error');
+            setEpcLookupError('Failed to reach EPC service');
+        }
+    };
+
+    const clearEpc = () => {
+        setValue('epc', undefined as any);
+        setEpcCertInput('');
+        setEpcLookupStatus('idle');
+        setEpcLookupError(null);
+        setEpcAddressPreview(null);
+    };
 
     // Populate data once fetched
     useEffect(() => {
@@ -254,12 +304,17 @@ export default function EditPropertyPage() {
                 rentCollectionStatus: (property.rentCollectionStatus as any) ?? null,
                 arrearsStatus: (property.arrearsStatus as any) || "no-arrears",
                 tenancyNotes: property.tenancyNotes || "",
-                epc: property.epc || "",
+                epc: (typeof property.epc === 'object' ? property.epc : undefined) as any,
                 displayOnHomepage: property.displayOnHomepage ?? false,
                 isFeatured: property.isFeatured ?? false,
                 isHighYield: (property as any).isHighYield ?? false,
                 status: (property.status as any) || "draft"
             });
+
+            if (typeof property.epc === 'object' && property.epc?.certificateNumber) {
+                setEpcCertInput(property.epc.certificateNumber);
+                setEpcLookupStatus('success');
+            }
 
             if (property.gallery && property.gallery.length > 0) {
                 setImages(property.gallery.map((img: any) => ({
@@ -679,6 +734,15 @@ export default function EditPropertyPage() {
                                     />
                                 </div>
 
+                                {liveGrossYield !== null && (
+                                    <div className="flex items-center justify-between rounded-lg bg-secondary px-4 py-3">
+                                        <span className="text-sm text-secondary">Estimated Gross Yield</span>
+                                        <span className={`text-sm font-semibold ${liveGrossYield >= 5 ? "text-success-600" : "text-primary"}`}>
+                                            {liveGrossYield}%
+                                        </span>
+                                    </div>
+                                )}
+
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                     <Controller
                                         name="tenure"
@@ -960,20 +1024,50 @@ export default function EditPropertyPage() {
                                     )}
                                 />
 
-                                <Controller
-                                    name="epc"
-                                    control={control}
-                                    render={({ field, fieldState: { error } }) => (
+                                {/* EPC Certificate Lookup */}
+                                <div className="space-y-2">
+                                    <Label>EPC Certificate</Label>
+                                    <div className="flex gap-2">
                                         <Input
-                                            {...field}
-                                            label="EPC Rating"
-                                            placeholder="e.g. C or D"
-                                            value={field.value ?? ""}
-                                            isInvalid={!!error}
-                                            hint={error?.message}
+                                            placeholder="e.g. 1111-2222-3333-4444-5555"
+                                            value={epcCertInput}
+                                            onChange={(value: string) => {
+                                                setEpcCertInput(value);
+                                                if (epcLookupStatus === 'success') setEpcLookupStatus('idle');
+                                            }}
                                         />
+                                        <Button
+                                            type="button"
+                                            color="secondary"
+                                            size="md"
+                                            onClick={handleEpcLookup}
+                                            isLoading={epcLookupStatus === 'loading'}
+                                            isDisabled={!epcCertInput.trim() || epcLookupStatus === 'loading'}
+                                        >
+                                            Lookup
+                                        </Button>
+                                    </div>
+
+                                    {epcLookupStatus === 'error' && (
+                                        <p className="text-sm text-error-600">{epcLookupError}</p>
                                     )}
-                                />
+
+                                    {epcLookupStatus === 'success' && watchedEpc?.current && (
+                                        <div className="rounded-lg border border-secondary bg-secondary p-3 space-y-3">
+                                            {epcAddressPreview && (
+                                                <p className="text-xs text-tertiary">{epcAddressPreview}</p>
+                                            )}
+                                            <EpcChart epc={watchedEpc} />
+                                            <button
+                                                type="button"
+                                                onClick={clearEpc}
+                                                className="text-xs text-tertiary hover:text-error-600"
+                                            >
+                                                Clear EPC
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
 
                                 <Controller
                                     name="isFeatured"
