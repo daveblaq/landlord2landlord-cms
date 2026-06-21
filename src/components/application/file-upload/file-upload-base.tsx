@@ -154,7 +154,6 @@ export const FileUploadDropZone = ({
         if (oversizedFiles.length > 0 && typeof onSizeLimitExceed === "function") {
             const dataTransfer = new DataTransfer();
             oversizedFiles.forEach((file) => dataTransfer.items.add(file));
-
             setIsInvalid(true);
             onSizeLimitExceed(dataTransfer.files);
         }

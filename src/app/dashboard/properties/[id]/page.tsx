@@ -158,6 +158,7 @@ export default function ViewPropertyPage() {
                                                 if (!img) return null;
                                                 return (
                                                     <Carousel.Indicator
+                                                        key={index}
                                                         index={index}
                                                         className={({ isSelected }) =>
                                                             cx(
