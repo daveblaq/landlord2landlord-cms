@@ -45,7 +45,7 @@ export function EpcChart({ epc }: EpcChartProps) {
             <div className="space-y-0.5">
                 {EPC_BANDS.map((band) => {
                     const isCurrent = band.rating === currentRating;
-                    const isPotential = band.rating === potentialRating && potentialRating !== currentRating;
+                    const isPotential = band.rating === potentialRating;
                     const barWidthPct = band.max;
 
                     return (
