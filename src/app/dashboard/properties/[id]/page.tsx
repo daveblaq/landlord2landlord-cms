@@ -16,6 +16,8 @@ import { Button } from "@/components/base/buttons/button";
 import { Badge } from "@/components/base/badges/badges";
 import { Carousel } from "@/components/application/carousel/carousel-base";
 import { cx } from "@/utils/cx";
+import { AddLeadModal } from "@/components/leads/add-lead-modal";
+import { EpcChart } from "@/components/property/epc-chart";
 
 const statusConfig: Record<PropertyStatus, { label: string; color: "success" | "warning" | "error" | "gray" | "blue" | "brand" }> = {
     published: { label: "Published", color: "success" },
@@ -36,6 +38,7 @@ export default function ViewPropertyPage() {
 
     const { data: property, isLoading, isError } = useProperty(id);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
 
     if (isLoading) {
         return (
@@ -67,6 +70,7 @@ export default function ViewPropertyPage() {
     const status = statusConfig[property.status] ?? { label: property.status, color: "gray" as const };
 
     return (
+        <>
         <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6">
                     {/* Top Action Bar */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-secondary pb-5">
@@ -109,21 +113,30 @@ export default function ViewPropertyPage() {
                             </div>
                         </div>
 
-                        <Button
-                            color="primary"
-                            size="md"
-                            iconLeading={Edit01}
-                            onClick={() => router.push(`/dashboard/properties/${property._id}/edit`)}
-                        >
-                            Edit Listing
-                        </Button>
+                        <div className="flex items-center gap-3">
+                            <Button
+                                color="secondary"
+                                size="md"
+                                onClick={() => setIsEnquiryOpen(true)}
+                            >
+                                Log Enquiry
+                            </Button>
+                            <Button
+                                color="primary"
+                                size="md"
+                                iconLeading={Edit01}
+                                onClick={() => router.push(`/dashboard/properties/${property._id}/edit`)}
+                            >
+                                Edit Listing
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         {/* Main Info Columns (Left & Center) */}
                         <div className="lg:col-span-2 space-y-6">
-                            {/* Media Gallery Card */}
-                            <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-4">
+                            {/* Media Gallery Card — hidden when no hero image and no gallery */}
+                            {(property.heroImage || property.gallery?.length > 0) && <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-4">
                                 <h2 className="text-sm font-semibold text-primary uppercase tracking-wider">
                                     Listing Photos
                                 </h2>
@@ -191,7 +204,7 @@ export default function ViewPropertyPage() {
                                         )}
                                     </div>
                                 )}
-                            </div>
+                            </div>}
 
                             {/* Property Details Card */}
                             <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-5">
@@ -224,12 +237,14 @@ export default function ViewPropertyPage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <h3 className="text-sm font-semibold text-primary">Description</h3>
-                                    <p className="text-sm text-tertiary whitespace-pre-wrap leading-relaxed">
-                                        {property.description}
-                                    </p>
-                                </div>
+                                {property.description && (
+                                    <div className="space-y-2">
+                                        <h3 className="text-sm font-semibold text-primary">Description</h3>
+                                        <p className="text-sm text-tertiary whitespace-pre-wrap leading-relaxed">
+                                            {property.description}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Tenancy Information Card */}
@@ -338,10 +353,12 @@ export default function ViewPropertyPage() {
                                 </h3>
 
                                 <div className="space-y-3">
-                                    <div className="flex justify-between items-center py-1 border-b border-secondary">
-                                        <span className="text-sm text-tertiary">EPC Rating</span>
-                                        <span className="text-sm font-semibold text-primary uppercase">{property.epc || "N/A"}</span>
-                                    </div>
+                                    {property.epc && typeof property.epc === 'object' && property.epc.current && (
+                                        <div className="py-1 border-b border-secondary space-y-3">
+                                            <span className="text-xs text-tertiary uppercase tracking-wider block">EPC Rating</span>
+                                            <EpcChart epc={property.epc} />
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center py-1 border-b border-secondary">
                                         <span className="text-sm text-tertiary">Council Tax Band</span>
                                         <span className="text-sm font-semibold text-primary uppercase">{property.councilTaxBand || "N/A"}</span>
@@ -371,5 +388,13 @@ export default function ViewPropertyPage() {
                         </div>
                     </div>
             </div>
+
+            <AddLeadModal
+                isOpen={isEnquiryOpen}
+                onOpenChange={setIsEnquiryOpen}
+                propertyId={property._id}
+                propertyTitle={property.title}
+            />
+        </>
     );
 }
