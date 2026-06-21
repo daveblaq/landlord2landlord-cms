@@ -13,7 +13,7 @@ import {
     Plus,
     Building02,
 } from "@untitledui/icons";
-import { useProperty, useUpdateProperty, useUploadPropertyImages, type Property } from "@/lib/api/properties";
+import { useProperty, useUpdateProperty, useUploadPropertyImages, type Property, lookupEpcRating } from "@/lib/api/properties";
 import { Input } from "@/components/base/input/input";
 import { Label } from "@/components/base/input/label";
 import { HintText } from "@/components/base/input/hint-text";
@@ -158,7 +158,15 @@ const propertySchema = yup.object().shape({
     status: yup
         .string()
         .oneOf(["draft", "pending-review", "published", "under-offer", "sold", "archived"])
-        .default("draft")
+        .default("draft"),
+    latitude: yup
+        .number()
+        .nullable()
+        .optional(),
+    longitude: yup
+        .number()
+        .nullable()
+        .optional()
 });
 
 
@@ -184,11 +192,98 @@ export default function EditPropertyPage() {
     const [images, setImages] = useState<ImageStateItem[]>([]);
     const [isUploading, setIsUploading] = useState(false);
 
+    // LocationIQ autocomplete states and handlers
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+    const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setSuggestions([]);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const fetchSuggestions = async (query: any) => {
+        const queryString = typeof query === "string" ? query : (query && query.target ? query.target.value : "");
+        if (!queryString || queryString.trim().length < 3) {
+            setSuggestions([]);
+            return;
+        }
+
+        const apiKey = process.env.NEXT_PUBLIC_LOCATIONIQ_API_KEY;
+        if (!apiKey || apiKey.includes("YOUR_LOCATIONIQ_API_TOKEN")) {
+            console.warn("LocationIQ API key is not configured.");
+            return;
+        }
+
+        setIsLoadingSuggestions(true);
+        try {
+            const res = await fetch(
+                `https://api.locationiq.com/v1/autocomplete.php?key=${apiKey}&q=${encodeURIComponent(queryString)}&limit=5&countrycodes=gb&format=json`
+            );
+            if (!res.ok) {
+                const errText = await res.text().catch(() => "");
+                throw new Error(`Failed to fetch suggestions: status ${res.status}. Response: ${errText}`);
+            }
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                setSuggestions(data);
+            } else {
+                setSuggestions([]);
+            }
+        } catch (e) {
+            console.error("LocationIQ autocomplete error", e);
+            setSuggestions([]);
+        } finally {
+            setIsLoadingSuggestions(false);
+        }
+    };
+
+    const handleSuggestionSelect = (item: any) => {
+        setValue("address", item.display_name, { shouldDirty: true, shouldValidate: true });
+
+        const addressData = item.address || {};
+        const city = addressData.city || addressData.town || addressData.village || addressData.suburb || addressData.county || "";
+        if (city) {
+            setValue("location", city, { shouldDirty: true, shouldValidate: true });
+        }
+
+        const postcode = addressData.postcode || "";
+        if (postcode) {
+            const outcode = postcode.trim().split(/\s+/)[0];
+            setValue("postcode", outcode, { shouldDirty: true, shouldValidate: true });
+
+            // Trigger background EPC lookup using the full postcode
+            lookupEpcRating(postcode, item.display_name).then((rating) => {
+                if (rating) {
+                    setValue("epc", rating, { shouldDirty: true, shouldValidate: true });
+                }
+            });
+        }
+
+        if (item.lat) {
+            setValue("latitude", parseFloat(item.lat), { shouldDirty: true });
+        }
+        if (item.lon) {
+            setValue("longitude", parseFloat(item.lon), { shouldDirty: true });
+        }
+
+        setSuggestions([]);
+    };
+
     const {
         control,
         handleSubmit,
         watch,
         reset,
+        setValue,
         formState: { isSubmitting }
     } = useForm({
         resolver: yupResolver(propertySchema),
@@ -217,10 +312,12 @@ export default function EditPropertyPage() {
             rentCollectionStatus: null,
             arrearsStatus: "no-arrears",
             tenancyNotes: "",
-            epc: "",
+            epc: "none",
             displayOnHomepage: false,
             isFeatured: false,
-            status: "draft"
+            status: "draft",
+            latitude: null,
+            longitude: null
         }
     });
 
@@ -254,11 +351,13 @@ export default function EditPropertyPage() {
                 rentCollectionStatus: (property.rentCollectionStatus as any) ?? null,
                 arrearsStatus: (property.arrearsStatus as any) || "no-arrears",
                 tenancyNotes: property.tenancyNotes || "",
-                epc: property.epc || "",
+                epc: property.epc || "none",
                 displayOnHomepage: property.displayOnHomepage ?? false,
                 isFeatured: property.isFeatured ?? false,
                 isHighYield: (property as any).isHighYield ?? false,
-                status: (property.status as any) || "draft"
+                status: (property.status as any) || "draft",
+                latitude: property.latitude ?? null,
+                longitude: property.longitude ?? null
             });
 
             if (property.gallery && property.gallery.length > 0) {
@@ -385,11 +484,13 @@ export default function EditPropertyPage() {
             rentCollectionStatus: formData.tenented ? (formData.rentCollectionStatus || undefined) : undefined,
             arrearsStatus: formData.tenented ? (formData.arrearsStatus || 'no-arrears') : 'no-arrears',
             tenancyNotes: formData.tenented ? (formData.tenancyNotes || undefined) : undefined,
-            epc: formData.epc || undefined,
+            epc: (formData.epc && formData.epc !== "none") ? formData.epc : undefined,
             displayOnHomepage: formData.displayOnHomepage,
             isFeatured: formData.isFeatured,
             isHighYield: formData.isHighYield,
             status: formData.status,
+            latitude: formData.latitude ? Number(formData.latitude) : undefined,
+            longitude: formData.longitude ? Number(formData.longitude) : undefined,
         };
 
         updatePropertyMutation.mutate({ id, data: propertyData as any }, {
@@ -578,13 +679,38 @@ export default function EditPropertyPage() {
                                     name="address"
                                     control={control}
                                     render={({ field, fieldState: { error } }) => (
-                                        <Input
-                                            {...field}
-                                            label="Full Address"
-                                            placeholder="e.g. 14 Oakfield Road, Manchester"
-                                            isInvalid={!!error}
-                                            hint={error?.message}
-                                        />
+                                        <div ref={containerRef} className="relative w-full">
+                                            <Input
+                                                {...field}
+                                                label="Full Address"
+                                                placeholder="e.g. 14 Oakfield Road, Manchester"
+                                                isInvalid={!!error}
+                                                hint={error?.message}
+                                                onChange={(val) => {
+                                                    field.onChange(val);
+                                                    if (searchTimeoutRef.current) {
+                                                        clearTimeout(searchTimeoutRef.current);
+                                                    }
+                                                    searchTimeoutRef.current = setTimeout(() => {
+                                                        fetchSuggestions(val);
+                                                    }, 500);
+                                                }}
+                                            />
+                                            {suggestions.length > 0 && (
+                                                <div className="absolute left-0 right-0 mt-1 bg-primary border border-secondary shadow-lg z-50 w-full rounded-xl max-h-60 overflow-y-auto divide-y divide-secondary">
+                                                    {suggestions.map((item) => (
+                                                        <button
+                                                            key={item.place_id}
+                                                            type="button"
+                                                            className="w-full text-left px-4 py-3 text-sm text-primary hover:bg-secondary transition-colors duration-150 focus:outline-hidden focus:bg-secondary"
+                                                            onClick={() => handleSuggestionSelect(item)}
+                                                        >
+                                                            {item.display_name}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 />
 
@@ -963,15 +1089,27 @@ export default function EditPropertyPage() {
                                 <Controller
                                     name="epc"
                                     control={control}
-                                    render={({ field, fieldState: { error } }) => (
-                                        <Input
-                                            {...field}
+                                    render={({ field: { value, onChange }, fieldState: { error } }) => (
+                                        <Select
                                             label="EPC Rating"
-                                            placeholder="e.g. C or D"
-                                            value={field.value ?? ""}
+                                            placeholder="Select rating..."
+                                            selectedKey={value || "none"}
+                                            onSelectionChange={(key) => onChange(key === "none" ? undefined : key)}
                                             isInvalid={!!error}
                                             hint={error?.message}
-                                        />
+                                            items={[
+                                                { id: "none", label: "Not Specified" },
+                                                { id: "A", label: "A" },
+                                                { id: "B", label: "B" },
+                                                { id: "C", label: "C" },
+                                                { id: "D", label: "D" },
+                                                { id: "E", label: "E" },
+                                                { id: "F", label: "F" },
+                                                { id: "G", label: "G" },
+                                            ]}
+                                        >
+                                            {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+                                        </Select>
                                     )}
                                 />
 

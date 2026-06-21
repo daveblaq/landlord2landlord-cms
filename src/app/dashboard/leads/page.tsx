@@ -241,40 +241,74 @@ export default function LeadsPage() {
     };
 
     const handleDownloadTemplate = () => {
-        const headers = [
-            "Name",
-            "Email",
-            "Phone"
-        ];
-        const rows = [
-            [
-                "John Doe",
-                "john.doe@example.com",
-                "+447700900077"
-            ],
-            [
-                "Jane Smith",
-                "jane.smith@example.com",
-                "+447700900088"
-            ]
-        ];
+        const xmlString = `<?xml version="1.0" encoding="utf-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+  <Author>L2L Landlords</Author>
+ </DocumentProperties>
+ <ExcelWorkbook xmlns="urn:schemas-microsoft-com:office:excel">
+  <WindowHeight>9000</WindowHeight>
+  <WindowWidth>15000</WindowWidth>
+  <WindowTopX>240</WindowTopX>
+  <WindowTopY>75</WindowTopY>
+  <ProtectStructure>False</ProtectStructure>
+  <ProtectWindows>False</ProtectWindows>
+ </ExcelWorkbook>
+ <Worksheet ss:Name="Leads Template">
+  <Table>
+   <Column ss:Width="120"/>
+   <Column ss:Width="180"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="120"/>
+   <Column ss:Width="250"/>
+   <Row ss:AutoFitHeight="0" ss:Height="20">
+    <Cell><Data ss:Type="String">Name</Data></Cell>
+    <Cell><Data ss:Type="String">Email</Data></Cell>
+    <Cell><Data ss:Type="String">Phone</Data></Cell>
+    <Cell><Data ss:Type="String">Type</Data></Cell>
+    <Cell><Data ss:Type="String">Message</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0" ss:Height="20">
+    <Cell><Data ss:Type="String">John Doe</Data></Cell>
+    <Cell><Data ss:Type="String">john.doe@example.com</Data></Cell>
+    <Cell><Data ss:Type="String">+447700900077</Data></Cell>
+    <Cell><Data ss:Type="String">General Enquiry</Data></Cell>
+    <Cell><Data ss:Type="String">Interested in purchasing a property.</Data></Cell>
+   </Row>
+   <Row ss:AutoFitHeight="0" ss:Height="20">
+    <Cell><Data ss:Type="String">Jane Smith</Data></Cell>
+    <Cell><Data ss:Type="String">jane.smith@example.com</Data></Cell>
+    <Cell><Data ss:Type="String">+447700900088</Data></Cell>
+    <Cell><Data ss:Type="String">Valuation Lead</Data></Cell>
+    <Cell><Data ss:Type="String">Requesting valuation of my portfolio.</Data></Cell>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <Selected/>
+   <ProtectObjects>False</ProtectObjects>
+   <ProtectScenarios>False</ProtectScenarios>
+  </WorksheetOptions>
+  <DataValidation xmlns="urn:schemas-microsoft-com:office:excel">
+   <Range>R2C4:R500C4</Range>
+   <Type>List</Type>
+   <Value>&quot;Property Enquiry,Mortgage Lead,Insurance Lead,Valuation Lead,General Enquiry&quot;</Value>
+   <ErrorStyle>Stop</ErrorStyle>
+   <ErrorMessage>Please select a valid lead type from the dropdown list.</ErrorMessage>
+   <ErrorTitle>Invalid Lead Type</ErrorTitle>
+  </DataValidation>
+ </Worksheet>
+</Workbook>`;
 
-        const csvContent = [
-            headers.join(","),
-            ...rows.map(row => row.map(val => {
-                const str = String(val);
-                if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-                    return `"${str.replace(/"/g, '""')}"`;
-                }
-                return str;
-            }).join(","))
-        ].join("\n");
-
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const blob = new Blob([xmlString], { type: "application/vnd.ms-excel;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", "l2l_bulk_leads_template.csv");
+        link.setAttribute("download", "l2l_bulk_leads_template.xls");
         link.style.visibility = "hidden";
         document.body.appendChild(link);
         link.click();
@@ -322,6 +356,55 @@ export default function LeadsPage() {
         return lines;
     };
 
+    const parseXMLSpreadsheet = (text: string): string[][] => {
+        try {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(text, "text/xml");
+            
+            const parserError = xmlDoc.getElementsByTagName("parsererror");
+            if (parserError.length > 0) {
+                return [];
+            }
+            
+            const rows: string[][] = [];
+            const rowNodes = xmlDoc.getElementsByTagName("Row");
+            
+            for (let i = 0; i < rowNodes.length; i++) {
+                const cellNodes = rowNodes[i].getElementsByTagName("Cell");
+                const rowValues: string[] = [];
+                let currentIdx = 0;
+                
+                for (let j = 0; j < cellNodes.length; j++) {
+                    const cellNode = cellNodes[j];
+                    const indexAttr = cellNode.getAttribute("ss:Index");
+                    if (indexAttr) {
+                        const targetIdx = parseInt(indexAttr, 10) - 1;
+                        while (currentIdx < targetIdx) {
+                            rowValues[currentIdx] = "";
+                            currentIdx++;
+                        }
+                    }
+                    const dataNode = cellNode.getElementsByTagName("Data")[0];
+                    rowValues[currentIdx] = dataNode ? (dataNode.textContent || "").trim() : "";
+                    currentIdx++;
+                }
+                
+                const normalizedRow: string[] = [];
+                for (let k = 0; k < currentIdx; k++) {
+                    normalizedRow.push(rowValues[k] || "");
+                }
+                
+                if (normalizedRow.some(v => v !== "")) {
+                    rows.push(normalizedRow);
+                }
+            }
+            return rows;
+        } catch (e) {
+            console.error("XML parse error", e);
+            return [];
+        }
+    };
+
     const handleFileDrop = (files: FileList) => {
         const file = files[0];
         if (!file) return;
@@ -334,22 +417,26 @@ export default function LeadsPage() {
             const text = e.target?.result as string;
             if (!text) return;
 
-            const csvData = parseCSV(text);
-            if (csvData.length < 2) {
-                setValidationErrors(["CSV file must contain a header row and at least one lead row."]);
+            const isXml = text.trim().startsWith("<?xml") || text.includes("<Workbook");
+            const data = isXml ? parseXMLSpreadsheet(text) : parseCSV(text);
+
+            if (data.length < 2) {
+                setValidationErrors([`${isXml ? "Excel" : "CSV"} file must contain a header row and at least one lead row.`]);
                 setParsedLeads(null);
                 return;
             }
 
-            const headers = csvData[0].map(h => h.trim().toLowerCase());
-            const rows = csvData.slice(1);
+            const headers = data[0].map(h => h.trim().toLowerCase());
+            const rows = data.slice(1);
 
             const nameIndex = headers.indexOf("name");
             const emailIndex = headers.indexOf("email");
             const phoneIndex = headers.indexOf("phone");
+            const typeIndex = headers.indexOf("type");
+            const messageIndex = headers.indexOf("message");
 
             if (nameIndex === -1 || emailIndex === -1) {
-                setValidationErrors(["CSV headers must include 'Name' and 'Email'."]);
+                setValidationErrors(["File headers must include 'Name' and 'Email'."]);
                 setParsedLeads(null);
                 return;
             }
@@ -358,18 +445,21 @@ export default function LeadsPage() {
             const errors: string[] = [];
 
             rows.forEach((row, idx) => {
-                if (row.length === 0 || (row.length === 1 && row[0] === "")) return; // Skip empty rows
+                if (row.length === 0 || (row.length === 1 && row[0] === "")) return;
 
-                const name = row[nameIndex] || "";
-                const email = row[emailIndex] || "";
-                const phone = phoneIndex !== -1 ? row[phoneIndex] : "";
+                const name = nameIndex !== -1 ? (row[nameIndex] || "") : "";
+                const email = emailIndex !== -1 ? (row[emailIndex] || "") : "";
+                const phone = phoneIndex !== -1 ? (row[phoneIndex] || "") : "";
+                const type = typeIndex !== -1 ? (row[typeIndex] || "") : "";
+                const message = messageIndex !== -1 ? (row[messageIndex] || "") : "";
 
                 const lead = {
                     name,
                     email,
                     phone: phone || undefined,
-                    type: "General Enquiry",
+                    type: type || "General Enquiry",
                     status: "New",
+                    message: message || undefined,
                     metadata: {}
                 };
 
@@ -400,6 +490,12 @@ export default function LeadsPage() {
                 rowErrors.push("Invalid email address");
             }
         }
+
+        const validTypes = ['Property Enquiry', 'Mortgage Lead', 'Insurance Lead', 'Valuation Lead', 'General Enquiry'];
+        if (lead.type && !validTypes.includes(lead.type)) {
+            rowErrors.push(`Invalid type "${lead.type}". Must be one of: ${validTypes.join(', ')}`);
+        }
+
         return rowErrors;
     };
 
@@ -1052,7 +1148,7 @@ export default function LeadsPage() {
                                     Bulk Upload Leads
                                 </AriaHeading>
                                 <p className="text-sm text-tertiary mt-0.5">
-                                    Import multiple leads using a CSV file.
+                                    Import multiple leads using a CSV or Excel template file.
                                 </p>
                             </div>
 
@@ -1060,7 +1156,7 @@ export default function LeadsPage() {
                                 {/* Instructions & Download Template */}
                                 <div className="rounded-xl bg-secondary_subtle border border-secondary p-4 space-y-3">
                                     <div className="text-sm text-secondary leading-relaxed">
-                                        Please download our CSV template to ensure your lead data matches our required formats, including conditional fields like Property ID, Budget, and Address.
+                                        Please download our template to ensure your lead data matches our required formats, including a dropdown select list for Type.
                                     </div>
                                     <Button
                                         color="secondary"
@@ -1068,21 +1164,21 @@ export default function LeadsPage() {
                                         iconLeading={DownloadCloud02}
                                         onClick={handleDownloadTemplate}
                                     >
-                                        Download CSV Template
+                                        Download Template (Excel)
                                     </Button>
                                 </div>
 
                                 {/* File Dropzone / Uploader */}
                                 <div className="space-y-1.5">
                                     <label className="text-sm font-medium text-secondary">
-                                        CSV File
+                                        Template File
                                     </label>
                                     {!selectedFileName ? (
                                         <FileUpload.DropZone
-                                            accept=".csv"
+                                            accept=".csv,.xls"
                                             allowsMultiple={false}
                                             onDropFiles={handleFileDrop}
-                                            hint="CSV files only (up to 10MB)"
+                                            hint="CSV or Excel (.xls) files only (up to 10MB)"
                                             maxSize={10 * 1024 * 1024}
                                         />
                                     ) : (
