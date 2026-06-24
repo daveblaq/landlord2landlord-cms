@@ -56,6 +56,8 @@ export const InputBase = ({
     type,
     showPasswordToggle = true,
     onChange,
+    value,
+    defaultValue,
     ...inputProps
 }: Omit<InputBaseProps, "label" | "hint">) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
