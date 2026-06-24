@@ -846,25 +846,13 @@ export default function NewPropertyPage() {
                                             )}
                                         />
                                     </div>
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mt-4">
-                                        <Controller
-                                            name="rentReviewDate"
-                                            control={control}
-                                            render={({ field, fieldState: { error } }) => (
-                                                <div className="flex flex-col gap-1.5">
-                                                    <Label>Rent Review Date</Label>
-                                                    <DatePicker aria-label="Rent Review Date" value={field.value ? parseDate(field.value) : null} onChange={(val) => field.onChange(val ? val.toString() : "")} />
-                                                    {error?.message && <HintText isInvalid={true}>{error.message}</HintText>}
-                                                </div>
-                                            )}
-                                        />
-                                    </div>
+
                                 </div>
 
                                 {/* Income Quality */}
                                 <div>
                                     <p className="text-xs font-medium text-tertiary uppercase tracking-wider mb-3">Income Quality</p>
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                         <Controller
                                             name="rentPaymentStatus"
                                             control={control}
@@ -889,6 +877,17 @@ export default function NewPropertyPage() {
                                                 ]}>
                                                     {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
                                                 </Select>
+                                            )}
+                                        />
+                                        <Controller
+                                            name="rentReviewDate"
+                                            control={control}
+                                            render={({ field, fieldState: { error } }) => (
+                                                <div className="flex flex-col gap-1.5">
+                                                    <Label>Rent Review Date</Label>
+                                                    <DatePicker aria-label="Rent Review Date" value={field.value ? parseDate(field.value) : null} onChange={(val) => field.onChange(val ? val.toString() : "")} />
+                                                    {error?.message && <HintText isInvalid={true}>{error.message}</HintText>}
+                                                </div>
                                             )}
                                         />
                                     </div>
