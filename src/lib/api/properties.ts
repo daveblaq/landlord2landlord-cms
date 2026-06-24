@@ -62,6 +62,7 @@ export interface Property {
     rentReviewDate?: string;
     tenancyNotes?: string;
     epc?: string;
+    potentialEpc?: string;
     compliance?: PropertyCompliance;
     status: PropertyStatus;
     displayOnHomepage: boolean;
@@ -177,15 +178,20 @@ export const useProperty = (
 /**
  * Lookup EPC Rating via backend proxy
  */
-export const lookupEpcRating = async (postcode: string, address?: string): Promise<string | null> => {
+export interface EpcLookupResponse {
+    rating: string | null;
+    potentialRating: string | null;
+}
+
+export const lookupEpcRating = async (postcode: string, address?: string): Promise<EpcLookupResponse | null> => {
     try {
-        const response = await apiClient.get<ApiResponse<{ rating: string | null }>>(
+        const response = await apiClient.get<ApiResponse<EpcLookupResponse>>(
             `${API_ENDPOINTS.PROPERTIES.BASE}/epc-lookup`,
             {
                 params: { postcode, address }
             }
         );
-        return response.data.data?.rating || null;
+        return response.data.data || null;
     } catch (error) {
         console.error("Failed to lookup EPC rating:", error);
         return null;

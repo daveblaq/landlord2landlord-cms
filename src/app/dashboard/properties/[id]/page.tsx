@@ -458,7 +458,9 @@ export default function ViewPropertyPage() {
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center py-1 border-b border-secondary">
                                         <span className="text-sm text-tertiary">EPC Rating</span>
-                                        <span className="text-sm font-semibold text-primary uppercase">{property.epc || "N/A"}</span>
+                                        <span className="text-sm font-semibold text-primary uppercase">
+                                            {property.epc || "N/A"}{property.potentialEpc && property.potentialEpc !== "none" ? ` (Potential: ${property.potentialEpc})` : ""}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between items-center py-1 border-b border-secondary">
                                         <span className="text-sm text-tertiary">Council Tax Band</span>
