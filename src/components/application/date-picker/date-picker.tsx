@@ -39,7 +39,7 @@ export const  DatePicker = ({ value: valueProp, defaultValue, onChange, onApply,
             onChange={setValue}
         >
             <AriaGroup className="w-full flex">
-                <Button size="sm" color="secondary" iconLeading={CalendarIcon} className={cx("w-full justify-start text-left font-normal", triggerClassName)}>
+                <Button size="sm" color="secondary" iconLeading={CalendarIcon} className={cx("w-full h-10 justify-start text-left font-normal", triggerClassName)}>
                     {formattedDate}
                 </Button>
             </AriaGroup>
