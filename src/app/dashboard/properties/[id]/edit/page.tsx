@@ -615,14 +615,14 @@ export default function EditPropertyPage() {
                                 name="bedrooms"
                                 control={control}
                                 render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => (
-                                    <Input {...rest} value={String(value)} onChange={(val) => onChange(Number(val))} type="number" label="Bedrooms" placeholder="1" isInvalid={!!error} hint={error?.message} />
+                                    <Input {...rest} value={String(value)} onChange={(val) => { const n = parseFloat(val); onChange(isNaN(n) ? 0 : n); }} label="Bedrooms" placeholder="1" isInvalid={!!error} hint={error?.message} />
                                 )}
                             />
                             <Controller
                                 name="bathrooms"
                                 control={control}
                                 render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => (
-                                    <Input {...rest} value={String(value)} onChange={(val) => onChange(Number(val))} type="number" label="Bathrooms" placeholder="1" isInvalid={!!error} hint={error?.message} />
+                                    <Input {...rest} value={String(value)} onChange={(val) => { const n = parseFloat(val); onChange(isNaN(n) ? 0 : n); }} label="Bathrooms" placeholder="1" isInvalid={!!error} hint={error?.message} />
                                 )}
                             />
                         </div>
