@@ -183,6 +183,11 @@ const propertySchema = yup.object().shape({
         .nullable()
         .transform((value, originalValue) => originalValue === "" ? null : value)
         .optional(),
+    potentialEpc: yup
+        .string()
+        .nullable()
+        .transform((value, originalValue) => originalValue === "" ? null : value)
+        .optional(),
     compliance: yup.object().shape({
         epc: complianceDocSchema,
     }).optional(),
@@ -264,8 +269,20 @@ export default function NewPropertyPage() {
         if (postcode) {
             const outcode = postcode.trim().split(/\s+/)[0];
             setValue("postcode", outcode, { shouldDirty: true, shouldValidate: true });
-            lookupEpcRating(postcode, item.display_name).then((rating) => {
-                if (rating) setValue("epc", rating, { shouldDirty: true, shouldValidate: true });
+            lookupEpcRating(postcode, item.display_name).then((res) => {
+                if (res && (res.rating || res.potentialRating)) {
+                    if (res.rating) setValue("epc", res.rating, { shouldDirty: true, shouldValidate: true });
+                    if (res.potentialRating) setValue("potentialEpc", res.potentialRating, { shouldDirty: true, shouldValidate: true });
+                } else {
+                    toast.custom((t) => (
+                        <IconNotification
+                            title="No EPC Data Found"
+                            description="No energy performance certificate was found for this address. You can enter the EPC rating manually if available."
+                            color="warning"
+                            onClose={() => toast.dismiss(t)}
+                        />
+                    ));
+                }
             });
         }
         if (item.lat) setValue("latitude", parseFloat(item.lat), { shouldDirty: true });
@@ -314,6 +331,7 @@ export default function NewPropertyPage() {
             rentReviewDate: "",
             tenancyNotes: "",
             epc: "",
+            potentialEpc: "",
             compliance: {
                 epc: defaultComplianceDoc,
             },
@@ -490,6 +508,7 @@ export default function NewPropertyPage() {
             rentReviewDate: formData.tenented && formData.rentReviewDate ? formData.rentReviewDate : undefined,
             tenancyNotes: formData.tenanted ? (formData.tenancyNotes || undefined) : undefined,
             epc: formData.epc && formData.epc !== "none" ? formData.epc : undefined,
+            potentialEpc: formData.potentialEpc && formData.potentialEpc !== "none" ? formData.potentialEpc : undefined,
             compliance: formData.compliance
                 ? Object.fromEntries(
                     Object.entries(formData.compliance).map(([key, val]: [string, any]) => [
@@ -618,8 +637,8 @@ export default function NewPropertyPage() {
                                     />
                                     {suggestions.length > 0 && (
                                         <div className="absolute left-0 right-0 mt-1 bg-primary border border-secondary shadow-lg z-50 w-full rounded-xl max-h-60 overflow-y-auto divide-y divide-secondary">
-                                            {suggestions.map((item) => (
-                                                <button key={item.place_id} type="button" className="w-full text-left px-4 py-3 text-sm text-primary hover:bg-secondary transition-colors duration-150 focus:outline-hidden focus:bg-secondary" onClick={() => handleSuggestionSelect(item)}>
+                                            {suggestions.map((item, idx) => (
+                                                <button key={`${item.place_id || idx}-${idx}`} type="button" className="w-full text-left px-4 py-3 text-sm text-primary hover:bg-secondary transition-colors duration-150 focus:outline-hidden focus:bg-secondary" onClick={() => handleSuggestionSelect(item)}>
                                                     {item.display_name}
                                                 </button>
                                             ))}
@@ -1049,25 +1068,45 @@ export default function NewPropertyPage() {
                             )}
                         />
 
-                        <Controller
-                            name="epc"
-                            control={control}
-                            render={({ field: { value } }) => (
-                                <div className="flex flex-col gap-1.5">
-                                    <Label>EPC Rating</Label>
-                                    <div className="flex items-center gap-2 rounded-lg border border-secondary bg-secondary_hover px-3 py-2 min-h-[40px]">
-                                        {value && value !== "none" ? (
-                                            <span className="inline-flex items-center justify-center size-7 rounded-md text-sm font-bold text-white" style={{ backgroundColor: EPC_COLORS[value as keyof typeof EPC_COLORS] ?? "#6b7280" }}>
-                                                {value}
-                                            </span>
-                                        ) : (
-                                            <span className="text-sm text-tertiary">Auto-filled from address</span>
-                                        )}
+                        <div className="grid grid-cols-2 gap-4">
+                            <Controller
+                                name="epc"
+                                control={control}
+                                render={({ field: { value } }) => (
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label>Current EPC Rating</Label>
+                                        <div className="flex items-center gap-2 rounded-lg border border-secondary bg-secondary_hover px-3 py-2 min-h-[40px]">
+                                            {value && value !== "none" ? (
+                                                <span className="inline-flex items-center justify-center size-7 rounded-md text-sm font-bold text-white" style={{ backgroundColor: EPC_COLORS[value as keyof typeof EPC_COLORS] ?? "#6b7280" }}>
+                                                    {value}
+                                                </span>
+                                            ) : (
+                                                <span className="text-sm text-tertiary">Auto-filled</span>
+                                            )}
+                                        </div>
                                     </div>
-                                    <HintText>Fetched automatically when an address is selected.</HintText>
-                                </div>
-                            )}
-                        />
+                                )}
+                            />
+
+                            <Controller
+                                name="potentialEpc"
+                                control={control}
+                                render={({ field: { value } }) => (
+                                    <div className="flex flex-col gap-1.5">
+                                        <Label>Potential EPC Rating</Label>
+                                        <div className="flex items-center gap-2 rounded-lg border border-secondary bg-secondary_hover px-3 py-2 min-h-[40px]">
+                                            {value && value !== "none" ? (
+                                                <span className="inline-flex items-center justify-center size-7 rounded-md text-sm font-bold text-white" style={{ backgroundColor: EPC_COLORS[value as keyof typeof EPC_COLORS] ?? "#6b7280" }}>
+                                                    {value}
+                                                </span>
+                                            ) : (
+                                                <span className="text-sm text-tertiary">Auto-filled</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            />
+                        </div>
 
                         <Controller
                             name="isFeatured"
