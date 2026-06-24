@@ -104,7 +104,7 @@ export const Toggle = ({ label, hint, className, size = "sm", slim, ...ariaSwitc
             {...ariaSwitchProps}
             className={(renderProps) =>
                 cx(
-                    "flex w-max items-start",
+                    "relative flex w-max items-start",
                     renderProps.isDisabled && "cursor-not-allowed",
                     sizes[size].root,
                     typeof className === "function" ? className(renderProps) : className,

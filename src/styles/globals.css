@@ -88,3 +88,20 @@ input[type="number"] {
 input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;
 }
+
+/* Visually hide native checkbox and radio inputs globally to prevent page scroll/focus jumps */
+input[type="checkbox"],
+input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+
