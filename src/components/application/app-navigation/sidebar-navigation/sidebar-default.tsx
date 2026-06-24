@@ -82,7 +82,7 @@ export const SidebarNavigationDefault = ({
                     </div>
                 ) : (
                     <>
-                        <ReachLogo className="h-8" />
+                        <ReachLogo className="h-10" />
                         <Button
                             onClick={() => setIsCollapsed(!isCollapsed)}
                             iconLeading={ChevronLeft}

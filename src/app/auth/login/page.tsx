@@ -93,7 +93,7 @@ export default function LoginPage() {
             <div className="relative z-10 w-full max-w-md">
                 {/* Branding Logo */}
                 <div className="flex flex-col items-center gap-4 text-center">
-                    <ReachLogo className="h-10 w-auto" />
+                    <ReachLogo className="h-12 w-auto" />
                     <p className="text-sm text-tertiary">
                         Enter your credentials to access the concierge dashboard
                     </p>
