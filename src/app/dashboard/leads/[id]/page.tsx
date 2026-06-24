@@ -21,6 +21,7 @@ import { useProperty, useUpdateProperty, type PropertyStatus } from "@/lib/api/p
 import { TextEditor } from "@/components/base/text-editor/text-editor";
 import { Button } from "@/components/base/buttons/button";
 import { Badge } from "@/components/base/badges/badges";
+import { NativeSelect } from "@/components/base/select/select-native";
 import { toast } from "sonner";
 import { IconNotification } from "@/components/application/notifications/notifications";
 
@@ -159,19 +160,19 @@ function PropertyDetailsSection({ propertyId }: { propertyId: string }) {
 
                 <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold text-tertiary whitespace-nowrap">Property Status:</span>
-                    <select
+                    <NativeSelect
                         value={property.status}
                         onChange={(e) => handlePropertyStatusChange(e.target.value as PropertyStatus)}
                         disabled={updatePropertyMutation.isPending}
-                        className="bg-primary border border-secondary text-primary rounded-lg px-2.5 py-1.5 text-xs font-semibold cursor-pointer outline-none focus:border-brand-500"
-                    >
-                        <option value="draft">Draft</option>
-                        <option value="pending-review">Pending Review</option>
-                        <option value="published">Published</option>
-                        <option value="under-offer">Under Offer</option>
-                        <option value="sold">Sold</option>
-                        <option value="archived">Archived</option>
-                    </select>
+                        options={[
+                            { value: "draft", label: "Draft" },
+                            { value: "pending-review", label: "Pending Review" },
+                            { value: "published", label: "Published" },
+                            { value: "under-offer", label: "Under Offer" },
+                            { value: "sold", label: "Sold" },
+                            { value: "archived", label: "Archived" },
+                        ]}
+                    />
                 </div>
             </div>
         </div>
@@ -657,18 +658,12 @@ export default function ViewLeadPage() {
                         <p className="text-xs text-tertiary">
                             Select a new state for this lead below to update the pipeline metrics.
                         </p>
-                        <select
+                        <NativeSelect
                             value={lead.status}
                             onChange={(e) => handleStatusChange(e.target.value as LeadStatus)}
                             disabled={updateLeadMutation.isPending}
-                            className="w-full bg-primary border border-secondary text-primary rounded-lg px-3 py-2.5 text-sm font-semibold cursor-pointer outline-none focus:border-brand-500"
-                        >
-                            {Object.keys(statusBadgeConfig).map((st) => (
-                                <option key={st} value={st}>
-                                    {st}
-                                </option>
-                            ))}
-                        </select>
+                            options={Object.keys(statusBadgeConfig).map((st) => ({ value: st, label: st }))}
+                        />
                     </div>
                 </div>
             </div>

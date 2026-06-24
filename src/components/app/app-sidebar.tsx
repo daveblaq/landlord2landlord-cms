@@ -9,7 +9,7 @@ type AppSidebarProps = ComponentProps<typeof SidebarNavigationDefault>;
 
 export function AppSidebar({ sections, ...props }: AppSidebarProps) {
     const { user } = useAuth();
-    const { data } = useLeads({ status: "New", limit: 1 }, { staleTime: 60_000 });
+    const { data } = useLeads({ limit: 1 }, { staleTime: 60_000 });
     const newCount = data?.totalResults ?? 0;
 
     const filteredSections = sections.map((section) => ({

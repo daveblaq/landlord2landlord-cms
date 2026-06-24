@@ -250,13 +250,13 @@ export default function ViewPropertyPage() {
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div className="space-y-1">
                                             <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Tenancy Status Details</span>
-                                            <span className="text-sm text-primary">{property.tenancyStatus || "N/A"}</span>
+                                            <span className="text-sm text-primary">{property.tenancyType || "N/A"}</span>
                                         </div>
 
                                         <div className="space-y-1">
                                             <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Tenant Move-in Date</span>
                                             <span className="text-sm text-primary">
-                                                {property.tenantMoveInDate ? new Date(property.tenantMoveInDate).toLocaleDateString("en-GB", {
+                                                {property.tenancyStartDate ? new Date(property.tenancyStartDate).toLocaleDateString("en-GB", {
                                                     day: "numeric",
                                                     month: "long",
                                                     year: "numeric"
@@ -266,7 +266,7 @@ export default function ViewPropertyPage() {
 
                                         <div className="space-y-1">
                                             <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Contract Type</span>
-                                            <span className="text-sm text-primary capitalize">{property.contractType || "N/A"}</span>
+                                            <span className="text-sm text-primary capitalize">{property.tenancyType || "N/A"}</span>
                                         </div>
 
                                         <div className="space-y-1">

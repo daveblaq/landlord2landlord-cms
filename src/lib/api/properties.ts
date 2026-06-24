@@ -16,6 +16,15 @@ export interface InvestmentMetrics {
     leaseYearsRemaining?: number;
 }
 
+export interface ComplianceDoc {
+    available: boolean;
+    url?: string;
+}
+
+export interface PropertyCompliance {
+    epc?: ComplianceDoc;
+}
+
 export interface Property {
     _id: string;
     id: string;
@@ -32,18 +41,28 @@ export interface Property {
     tenure: string;
     heroImage: string;
     gallery: any[];
+    floorplans?: { url: string; alt: string }[];
+    mediaFiles?: { url: string; alt: string }[];
     investmentMetrics: InvestmentMetrics;
-    serviceCharge: number;
-    groundRent: number;
+    priceType?: 'guide-price' | 'fixed-price' | 'offers-over';
+    serviceCharge?: number;
+    groundRent?: number;
     councilTaxBand?: string;
     tenented: boolean;
-    tenancyStatus?: string;
-    tenantMoveInDate?: string;
-    contractType?: string;
+    tenancyStartDate?: string;
+    tenancyType?: string;
+    fixedTermEndDate?: string;
+    rentPaymentStatus?: 'up-to-date' | 'partially-paid' | 'overdue';
     rentCollectionStatus?: string;
     arrearsStatus?: string;
+    depositProtected?: boolean;
+    noticeServed?: boolean;
+    tenantWantsToStay?: 'yes' | 'no' | 'unknown';
+    viewingArrangements?: 'vacant-access' | 'accompanied' | 'tenant-notify-24h' | 'tenant-notify-48h';
+    rentReviewDate?: string;
     tenancyNotes?: string;
     epc?: string;
+    compliance?: PropertyCompliance;
     status: PropertyStatus;
     displayOnHomepage: boolean;
     isFeatured: boolean;

@@ -49,8 +49,8 @@ interface SelectValueProps {
 }
 
 export const sizes = {
-    sm: { root: "py-1 px-2", shortcut: "pr-1" },
-    md: { root: "py-1.5 px-3", shortcut: "pr-3" },
+    sm: { root: "px-3.5", shortcut: "pr-1" },
+    md: { root: "px-4", shortcut: "pr-3" },
 };
 
 const SelectValue = ({ isOpen, isFocused, isDisabled, size, placeholder, placeholderIcon, ref }: SelectValueProps) => {
@@ -58,7 +58,7 @@ const SelectValue = ({ isOpen, isFocused, isDisabled, size, placeholder, placeho
         <AriaButton
             ref={ref}
             className={cx(
-                "relative flex w-full cursor-pointer items-center rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset",
+                "relative flex h-10 w-full cursor-pointer items-center rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset",
                 (isFocused || isOpen) && "ring-2 ring-brand",
                 isDisabled && "cursor-not-allowed bg-disabled_subtle text-disabled",
             )}

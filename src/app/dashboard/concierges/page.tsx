@@ -317,14 +317,14 @@ export default function ConciergePage() {
 
                     {/* Filter bar */}
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center bg-secondary_subtle p-4 rounded-xl border border-secondary">
-                        <div className="relative flex-1 max-w-sm">
-                            <SearchLg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-quaternary" />
-                            <input
+                        <div className="flex-1 max-w-sm">
+                            <Input
+                                icon={SearchLg}
                                 type="text"
                                 value={search}
-                                onChange={(e) => setSearch(e.target.value)}
+                                onChange={setSearch}
                                 placeholder="Search by name or email…"
-                                className="h-10 w-full rounded-lg border border-secondary bg-primary pl-9 pr-4 text-sm text-primary placeholder:text-placeholder focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                                size="md"
                             />
                         </div>
                     </div>

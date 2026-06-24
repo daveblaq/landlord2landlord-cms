@@ -26,28 +26,28 @@ export const styles = sortCx({
     sizes: {
         sm: {
             root: [
-                "gap-1 rounded-lg px-2 py-1 text-sm font-semibold before:rounded-[7px] data-icon-only:aspect-square data-icon-only:p-1.5",
+                "gap-1 rounded-md px-2 py-1 text-sm font-semibold before:rounded-[7px] data-icon-only:aspect-square data-icon-only:p-1.5",
                 "in-data-input-wrapper:px-3.5 in-data-input-wrapper:py-2.5 *:data-icon:[height:var(--icon-size-md)] *:data-icon:[min-height:var(--icon-size-md)] *:data-icon:[width:var(--icon-size-md)] *:data-icon:[min-width:var(--icon-size-md)] in-data-input-wrapper:data-icon-only:p-2.5",
             ].join(" "),
             linkRoot: "gap-1",
         },
         md: {
             root: [
-                "gap-1 rounded-lg px-3 py-1.5 text-sm font-semibold before:rounded-[7px] data-icon-only:aspect-square data-icon-only:p-2.25",
+                "gap-1 rounded-md px-3 py-1.5 text-sm font-semibold before:rounded-[7px] data-icon-only:aspect-square data-icon-only:p-2.25",
                 "in-data-input-wrapper:gap-1.5 in-data-input-wrapper:px-4 in-data-input-wrapper:text-md *:data-icon:[height:var(--icon-size-md)] *:data-icon:[min-height:var(--icon-size-md)] *:data-icon:[width:var(--icon-size-md)] *:data-icon:[min-width:var(--icon-size-md)] in-data-input-wrapper:data-icon-only:p-3",
             ].join(" "),
             linkRoot: "gap-1",
         },
         lg: {
             root: [
-                "gap-1.5 rounded-lg px-3 py-2.5 text-md font-semibold before:rounded-[7px] data-icon-only:aspect-square data-icon-only:p-2.75",
+                "gap-1.5 rounded-lg px-3 py-2.5 text-md font-semibold before:rounded-[11px] data-icon-only:aspect-square data-icon-only:p-2.75",
                 "*:data-icon:[height:var(--icon-size-lg)] *:data-icon:[min-height:var(--icon-size-lg)] *:data-icon:[width:var(--icon-size-lg)] *:data-icon:[min-width:var(--icon-size-lg)]",
             ].join(" "),
             linkRoot: "gap-1.5",
         },
         xl: {
             root: [
-                "gap-1.5 rounded-lg px-3 py-2 text-md font-semibold before:rounded-[7px] data-icon-only:aspect-square data-icon-only:p-2.75",
+                "gap-1.5 rounded-lg px-3 py-2 text-md font-semibold before:rounded-[11px] data-icon-only:aspect-square data-icon-only:p-2.75",
                 "*:data-icon:[height:var(--icon-size-xl)] *:data-icon:[min-height:var(--icon-size-xl)] *:data-icon:[width:var(--icon-size-xl)] *:data-icon:[min-width:var(--icon-size-xl)]",
             ].join(" "),
             linkRoot: "gap-1.5",

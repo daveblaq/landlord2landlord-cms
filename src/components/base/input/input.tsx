@@ -72,19 +72,19 @@ export const InputBase = ({
 
     const sizes = sortCx({
         sm: {
-            root: cx("px-2 py-1", hasTrailingIcon && "pr-9", hasLeadingIcon && "pl-8"),
-            iconLeading: "left-2",
+            root: cx("px-3.5", hasTrailingIcon && "pr-9", hasLeadingIcon && "pl-9"),
+            iconLeading: "left-3",
             iconTrailing: "right-3",
             shortcut: "pr-1.5",
         },
         md: {
-            root: cx("px-3 py-1.5", hasTrailingIcon && "pr-9.5", hasLeadingIcon && "pl-12"),
-            iconLeading: "left-3.5",
-            iconTrailing: "right-3.5",
+            root: cx("px-4", hasTrailingIcon && "pr-9.5", hasLeadingIcon && "pl-11"),
+            iconLeading: "left-4",
+            iconTrailing: "right-4",
             shortcut: "pr-3",
         },
         lg: {
-            root: cx("px-3.5 py-3 text-md", hasTrailingIcon && "pr-10.5", hasLeadingIcon && "pl-12"),
+            root: cx("px-4 text-md", hasTrailingIcon && "pr-10.5", hasLeadingIcon && "pl-12"),
             iconLeading: "left-4",
             iconTrailing: "right-4",
             shortcut: "pr-3.5",
@@ -97,7 +97,7 @@ export const InputBase = ({
             ref={groupRef}
             className={({ isFocusWithin, isDisabled, isInvalid }) =>
                 cx(
-                    "relative flex w-full flex-row place-content-center place-items-center rounded-lg bg-primary ring-1 ring-primary transition-shadow duration-100 ease-linear ring-inset",
+                    "relative flex h-10 w-full flex-row place-content-center place-items-center rounded-lg bg-primary ring-1 ring-primary transition-shadow duration-100 ease-linear ring-inset",
 
                     isFocusWithin && !isDisabled && "ring-2 ring-brand",
 
@@ -138,7 +138,7 @@ export const InputBase = ({
                 ref={ref}
                 placeholder={placeholder}
                 className={cx(
-                    "m-0 w-full bg-transparent text-sm text-primary ring-0 outline-hidden placeholder:text-placeholder autofill:rounded-lg autofill:text-primary",
+                    "m-0 w-full bg-transparent text-sm font-medium text-primary ring-0 outline-hidden placeholder:text-placeholder placeholder:font-normal autofill:rounded-lg autofill:text-primary",
                     isDisabled && "cursor-not-allowed text-disabled",
                     sizes[inputSize].root,
                     isPassword && showPasswordToggle && (

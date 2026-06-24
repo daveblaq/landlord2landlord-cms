@@ -23,6 +23,7 @@ import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
 import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
+import { TextArea } from "@/components/base/textarea/textarea";
 import {
     useLeads,
     useUpdateLead,
@@ -784,14 +785,14 @@ export default function LeadsPage() {
                             contentTrailing={
                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                                     {/* Search */}
-                                    <div className="relative w-full sm:w-64">
-                                        <SearchLg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-quaternary" />
-                                        <input
+                                    <div className="w-full sm:w-64">
+                                        <Input
+                                            icon={SearchLg}
                                             type="text"
                                             value={searchEmail}
-                                            onChange={(e) => handleSearchChange(e.target.value)}
+                                            onChange={handleSearchChange}
                                             placeholder="Search by email…"
-                                            className="h-10 w-full rounded-lg border border-secondary bg-primary pl-9 pr-4 text-sm text-primary placeholder:text-placeholder focus:border-brand-500/20"
+                                            size="md"
                                         />
                                     </div>
                                     <Button
@@ -1069,22 +1070,14 @@ export default function LeadsPage() {
                                     name="message"
                                     control={addLeadForm.control}
                                     render={({ field, fieldState: { error } }) => (
-                                        <div className="flex flex-col gap-1.5">
-                                            <label className="text-sm font-medium text-secondary">
-                                                Message <span className="text-tertiary font-normal">(optional)</span>
-                                            </label>
-                                            <textarea
-                                                {...field}
-                                                rows={3}
-                                                placeholder="Add a note or message from the lead…"
-                                                className={`w-full rounded-lg border px-3.5 py-2.5 text-sm text-primary placeholder:text-placeholder bg-primary resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-colors ${
-                                                    error ? "border-error-300 focus:border-error-500" : "border-secondary focus:border-brand-500"
-                                                }`}
-                                            />
-                                            {error && (
-                                                <p className="text-xs text-error-primary">{error.message}</p>
-                                            )}
-                                        </div>
+                                        <TextArea
+                                            {...field}
+                                            label="Message (optional)"
+                                            rows={3}
+                                            placeholder="Add a note or message from the lead…"
+                                            isInvalid={!!error}
+                                            hint={error?.message}
+                                        />
                                     )}
                                 />
 

@@ -142,18 +142,18 @@
     --color-gray-900: rgb(17 17 17);
     --color-gray-950: rgb(10 10 10);
 
-    --color-brand-25: rgb(240 247 255);
-    --color-brand-50: rgb(224 238 254);
-    --color-brand-100: rgb(196 221 254);
-    --color-brand-200: rgb(152 196 253);
-    --color-brand-300: rgb(101 163 252);
-    --color-brand-400: rgb(66 143 252);
-    --color-brand-500: rgb(49 133 252);
-    --color-brand-600: rgb(28 107 229);
-    --color-brand-700: rgb(18 83 195);
-    --color-brand-800: rgb(14 63 154);
-    --color-brand-900: rgb(11 48 116);
-    --color-brand-950: rgb(7 29 72);
+    --color-brand-25: rgb(240 246 255);
+    --color-brand-50: rgb(224 237 255);
+    --color-brand-100: rgb(184 212 255);
+    --color-brand-200: rgb(128 176 255);
+    --color-brand-300: rgb(77 138 255);
+    --color-brand-400: rgb(34 102 209);
+    --color-brand-500: rgb(0 71 171);
+    --color-brand-600: rgb(0 58 140);
+    --color-brand-700: rgb(0 45 107);
+    --color-brand-800: rgb(0 31 74);
+    --color-brand-900: rgb(0 18 51);
+    --color-brand-950: rgb(0 10 31);
 
     --color-error-25: rgb(255 251 250);
     --color-error-50: rgb(254 243 242);
@@ -752,7 +752,7 @@
     --color-bg-warning-secondary: var(--color-warning-100);
     --color-bg-success-primary: var(--color-success-50);
     --color-bg-success-secondary: var(--color-success-100);
-    --color-bg-brand-solid: var(--color-brand-600);
+    --color-bg-brand-solid: var(--color-brand-500);
     --color-bg-secondary-solid: var(--color-gray-600);
     --color-bg-error-solid: var(--color-error-600);
     --color-bg-warning-solid: var(--color-warning-600);
@@ -761,7 +761,7 @@
     --color-bg-primary_hover: var(--color-gray-50);
     --color-bg-disabled: var(--color-gray-100);
     --color-bg-active: var(--color-gray-50);
-    --color-bg-brand-solid_hover: var(--color-brand-700);
+    --color-bg-brand-solid_hover: var(--color-brand-600);
     --color-bg-error-primary: var(--color-error-50);
     --color-bg-brand-secondary: var(--color-brand-100);
     --color-bg-secondary: var(--color-gray-50);
