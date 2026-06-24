@@ -80,7 +80,7 @@ export const RadioButton = ({ label, hint, className, size = "sm", ...ariaRadioP
             {...ariaRadioProps}
             className={(renderProps) =>
                 cx(
-                    "flex items-start",
+                    "relative flex items-start",
                     renderProps.isDisabled && "cursor-not-allowed",
                     sizes[size].root,
                     typeof className === "function" ? className(renderProps) : className,
