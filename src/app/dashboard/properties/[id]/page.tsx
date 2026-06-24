@@ -249,12 +249,12 @@ export default function ViewPropertyPage() {
                                 {property.tenented && (
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div className="space-y-1">
-                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Tenancy Status Details</span>
-                                            <span className="text-sm text-primary">{property.tenancyType || "N/A"}</span>
+                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Tenancy Type</span>
+                                            <span className="text-sm text-primary uppercase">{property.tenancyType || "N/A"}</span>
                                         </div>
 
                                         <div className="space-y-1">
-                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Tenant Move-in Date</span>
+                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Tenancy Start Date</span>
                                             <span className="text-sm text-primary">
                                                 {property.tenancyStartDate ? new Date(property.tenancyStartDate).toLocaleDateString("en-GB", {
                                                     day: "numeric",
@@ -265,8 +265,19 @@ export default function ViewPropertyPage() {
                                         </div>
 
                                         <div className="space-y-1">
-                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Contract Type</span>
-                                            <span className="text-sm text-primary capitalize">{property.tenancyType || "N/A"}</span>
+                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Fixed Term End Date</span>
+                                            <span className="text-sm text-primary">
+                                                {property.fixedTermEndDate ? new Date(property.fixedTermEndDate).toLocaleDateString("en-GB", {
+                                                    day: "numeric",
+                                                    month: "long",
+                                                    year: "numeric"
+                                                }) : "N/A"}
+                                            </span>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Rent Payment Status</span>
+                                            <span className="text-sm text-primary capitalize">{property.rentPaymentStatus?.replace(/-/g, " ") || "N/A"}</span>
                                         </div>
 
                                         <div className="space-y-1">
@@ -277,6 +288,37 @@ export default function ViewPropertyPage() {
                                         <div className="space-y-1">
                                             <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Arrears Status</span>
                                             <span className="text-sm text-primary capitalize">{property.arrearsStatus?.replace(/-/g, " ") || "N/A"}</span>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Deposit Protected</span>
+                                            <span className="text-sm text-primary">{property.depositProtected === true ? "Yes" : property.depositProtected === false ? "No" : "N/A"}</span>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Notice Served</span>
+                                            <span className="text-sm text-primary">{property.noticeServed === true ? "Yes" : property.noticeServed === false ? "No" : "N/A"}</span>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Tenant Wants to Stay</span>
+                                            <span className="text-sm text-primary capitalize">{property.tenantWantsToStay || "N/A"}</span>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Viewing Arrangements</span>
+                                            <span className="text-sm text-primary capitalize">{property.viewingArrangements?.replace(/-/g, " ") || "N/A"}</span>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <span className="block text-xs font-semibold text-tertiary uppercase tracking-wider">Rent Review Date</span>
+                                            <span className="text-sm text-primary">
+                                                {property.rentReviewDate ? new Date(property.rentReviewDate).toLocaleDateString("en-GB", {
+                                                    day: "numeric",
+                                                    month: "long",
+                                                    year: "numeric"
+                                                }) : "N/A"}
+                                            </span>
                                         </div>
 
                                         {property.tenancyNotes && (
@@ -290,6 +332,76 @@ export default function ViewPropertyPage() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Floorplans Card */}
+                            {property.floorplans && property.floorplans.length > 0 && (
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-4">
+                                    <h2 className="text-sm font-semibold text-primary uppercase tracking-wider border-b border-secondary pb-3">
+                                        Floorplans
+                                    </h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {property.floorplans.map((fp: any, idx: number) => (
+                                            <div key={idx} className="border border-secondary rounded-lg overflow-hidden bg-secondary p-2 flex items-center justify-center aspect-video relative group">
+                                                <img
+                                                    src={fp.url}
+                                                    alt={fp.alt || `Floorplan ${idx + 1}`}
+                                                    className="max-w-full max-h-full object-contain"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Compliance Documents Card */}
+                            {property.compliance && Object.keys(property.compliance).length > 0 && (
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-4">
+                                    <h2 className="text-sm font-semibold text-primary uppercase tracking-wider border-b border-secondary pb-3">
+                                        Compliance Documents
+                                    </h2>
+                                    <div className="space-y-3">
+                                        {Object.entries(property.compliance).map(([key, val]: [string, any]) => {
+                                            if (!val?.available) return null;
+                                            return (
+                                                <div key={key} className="flex items-center justify-between py-2 border-b border-secondary last:border-0">
+                                                    <span className="text-sm font-medium text-primary capitalize">{key.replace(/-/g, " ")}</span>
+                                                    {val.url ? (
+                                                        <a href={val.url} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand-600 hover:text-brand-700">
+                                                            View Certificate
+                                                        </a>
+                                                    ) : (
+                                                        <span className="text-xs font-medium text-success-700 bg-success-50 px-2 py-0.5 rounded-full">Available</span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Documents & Media Card */}
+                            {property.mediaFiles && property.mediaFiles.length > 0 && (
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-4">
+                                    <h2 className="text-sm font-semibold text-primary uppercase tracking-wider border-b border-secondary pb-3">
+                                        Documents & Media
+                                    </h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {property.mediaFiles.map((doc: any, idx: number) => (
+                                            <div key={idx} className="flex items-center justify-between p-3 border border-secondary rounded-lg bg-secondary">
+                                                <div className="flex items-center gap-3">
+                                                    <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 text-fg-quaternary" stroke="currentColor" strokeWidth={1.5}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                                                    </svg>
+                                                    <span className="text-sm font-medium text-primary truncate max-w-[150px]">{doc.alt || `Document ${idx + 1}`}</span>
+                                                </div>
+                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-brand-600 hover:text-brand-700">
+                                                    View File
+                                                </a>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Financial Info & Side Info (Right Column) */}
@@ -305,6 +417,11 @@ export default function ViewPropertyPage() {
                                         <span className="text-xs text-tertiary uppercase tracking-wider block">Asking Price</span>
                                         <span className="text-xl font-bold text-primary">
                                             {formatCurrency(property.investmentMetrics?.askingPrice ?? 0)}
+                                            {property.priceType && (
+                                                <span className="text-sm font-normal text-tertiary ml-1.5 capitalize">
+                                                    ({property.priceType.replace("-", " ")})
+                                                </span>
+                                            )}
                                         </span>
                                     </div>
 
