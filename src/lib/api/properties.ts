@@ -8,6 +8,12 @@ import { API_ENDPOINTS, ApiResponse } from './endpoints';
 
 export type PropertyStatus = 'draft' | 'pending-review' | 'published' | 'under-offer' | 'sold' | 'archived';
 
+export interface EpcData {
+    current: { score: number; rating: string };
+    potential?: { score: number; rating: string };
+    certificateNumber?: string;
+}
+
 export interface InvestmentMetrics {
     askingPrice: number;
     monthlyRent: number;
@@ -70,7 +76,12 @@ export interface Property {
     isHighYield?: boolean;
     latitude?: number;
     longitude?: number;
-    createdBy?: string;
+    createdBy?: {
+        _id: string;
+        fullname: string;
+        email: string;
+        role: string;
+    };
     createdAt: string;
     updatedAt: string;
 }
@@ -275,3 +286,33 @@ export const useUploadPropertyImages = () => {
     });
 };
 
+/**
+ * Bulk Create Properties
+ */
+export const useBulkCreateProperties = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (properties: any[]) => {
+            const response = await apiClient.post<ApiResponse<Property[]>>(
+                `${API_ENDPOINTS.PROPERTIES.BASE}/bulk`,
+                { properties }
+            );
+            return response.data.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: propertyKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: propertyKeys.stats() });
+        },
+    });
+};
+
+/**
+ * Fetch all matching properties unpaginated (e.g. for CSV export)
+ */
+export const fetchAllProperties = async (params: PropertyQueryParams = {}): Promise<Property[]> => {
+    const response = await apiClient.get<ApiResponse<PropertiesResponse>>(
+        API_ENDPOINTS.PROPERTIES.BASE,
+        { params: { ...params, limit: 0 } }
+    );
+    return response.data.data.results;
+};

@@ -10,7 +10,6 @@ import {
     ChevronLeft,
     ChevronRight,
 } from "@untitledui/icons";
-
 import { useProperty, type PropertyStatus } from "@/lib/api/properties";
 import { Button } from "@/components/base/buttons/button";
 import { Badge } from "@/components/base/badges/badges";
@@ -488,6 +487,52 @@ export default function ViewPropertyPage() {
                                     </div>
                                  </div>
                             </div>
+
+                            {/* Posted By Card */}
+                            {property.createdBy && typeof property.createdBy === "object" && (
+                                <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-4">
+                                    <h3 className="text-sm font-semibold text-primary uppercase tracking-wider border-b border-secondary pb-3">
+                                        Posted By
+                                    </h3>
+
+                                    <div className="space-y-4">
+                                        <div>
+                                            <span className="text-xs text-tertiary uppercase tracking-wider block">Full Name</span>
+                                            <span className="text-sm font-semibold text-primary block mt-0.5">
+                                                {property.createdBy.fullname}
+                                            </span>
+                                        </div>
+
+                                        <div>
+                                            <span className="text-xs text-tertiary uppercase tracking-wider block">Email Address</span>
+                                            <a 
+                                                href={`mailto:${property.createdBy.email}`}
+                                                className="text-sm font-medium text-brand-600 hover:text-brand-700 block mt-0.5 break-all"
+                                            >
+                                                {property.createdBy.email}
+                                            </a>
+                                        </div>
+
+                                        <div className="flex justify-between items-center pt-1 border-t border-secondary">
+                                            <span className="text-xs text-tertiary uppercase tracking-wider block">Role</span>
+                                            <Badge 
+                                                color={
+                                                    property.createdBy.role === "admin" 
+                                                        ? "brand" 
+                                                        : property.createdBy.role === "concierge" 
+                                                        ? "blue" 
+                                                        : "gray"
+                                                } 
+                                                size="md" 
+                                                type="pill-color"
+                                                className="capitalize"
+                                            >
+                                                {property.createdBy.role}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
             </div>
