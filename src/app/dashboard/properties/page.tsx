@@ -1205,32 +1205,22 @@ export default function PropertiesPage() {
                                                     {/* Posted By */}
                                                     <Table.Cell>
                                                         {property.createdBy && typeof property.createdBy === "object" ? (
-                                                            <div className="min-w-[120px] flex flex-col gap-0.5">
-                                                                <span className="text-sm font-semibold text-primary truncate max-w-[150px]">
-                                                                    {property.createdBy.fullname}
-                                                                </span>
-                                                                <div className="flex items-center gap-1.5 flex-wrap">
-                                                                    <span className="text-xs text-tertiary truncate max-w-[120px]">
-                                                                        {property.createdBy.email}
-                                                                    </span>
-                                                                    <Badge 
-                                                                        color={
-                                                                            property.createdBy.role === "admin" 
-                                                                                ? "brand" 
-                                                                                : property.createdBy.role === "concierge" 
-                                                                                ? "blue" 
-                                                                                : "gray"
-                                                                        } 
-                                                                        size="sm" 
-                                                                        type="pill-color"
-                                                                        className="capitalize text-[10px] px-1 py-0"
-                                                                    >
-                                                                        {property.createdBy.role}
-                                                                    </Badge>
-                                                                </div>
-                                                            </div>
+                                                            <Badge
+                                                                color={
+                                                                    property.createdBy.role === "admin"
+                                                                        ? "brand"
+                                                                        : property.createdBy.role === "concierge"
+                                                                        ? "blue"
+                                                                        : "gray"
+                                                                }
+                                                                size="sm"
+                                                                type="pill-color"
+                                                                className="capitalize"
+                                                            >
+                                                                {property.createdBy.role}
+                                                            </Badge>
                                                         ) : (
-                                                            <span className="text-sm text-tertiary">N/A</span>
+                                                            <span className="text-sm text-tertiary">—</span>
                                                         )}
                                                     </Table.Cell>
 
