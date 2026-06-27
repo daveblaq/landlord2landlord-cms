@@ -506,7 +506,7 @@ export default function NewPropertyPage() {
             tenantWantsToStay: formData.tenented ? (formData.tenantWantsToStay || undefined) : undefined,
             viewingArrangements: formData.tenented ? (formData.viewingArrangements || undefined) : undefined,
             rentReviewDate: formData.tenented && formData.rentReviewDate ? formData.rentReviewDate : undefined,
-            tenancyNotes: formData.tenanted ? (formData.tenancyNotes || undefined) : undefined,
+            tenancyNotes: formData.tenented ? (formData.tenancyNotes || undefined) : undefined,
             epc: formData.epc && formData.epc !== "none" ? formData.epc : undefined,
             potentialEpc: formData.potentialEpc && formData.potentialEpc !== "none" ? formData.potentialEpc : undefined,
             compliance: formData.compliance
