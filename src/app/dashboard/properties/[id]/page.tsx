@@ -38,10 +38,114 @@ export default function ViewPropertyPage() {
 
     if (isLoading) {
         return (
-            <div className="flex-1 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
-                    <p className="text-sm text-tertiary">Loading property listing...</p>
+            <div className="flex-1 px-4 py-6 md:px-8 md:py-8 space-y-6 animate-pulse">
+                {/* Top Action Bar Skeleton */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-secondary pb-5">
+                    <div className="flex flex-col gap-2 w-full sm:max-w-xl">
+                        {/* Back button link skeleton */}
+                        <div className="h-4 w-32 bg-secondary rounded" />
+                        {/* Title skeleton */}
+                        <div className="flex items-center gap-3 mt-2 flex-wrap">
+                            <div className="h-8 w-64 bg-secondary rounded" />
+                            <div className="h-6 w-20 bg-secondary rounded-full" />
+                            <div className="h-6 w-16 bg-secondary rounded-full" />
+                        </div>
+                        {/* Location/postcode skeleton */}
+                        <div className="h-4 w-48 bg-secondary rounded mt-1" />
+                    </div>
+                    {/* Edit button skeleton */}
+                    <div className="h-10 w-28 bg-secondary rounded-lg sm:self-end" />
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                    {/* Main Info Columns (Left & Center) */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Listing Photos Card Skeleton */}
+                        <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-4">
+                            <div className="h-4 w-32 bg-secondary rounded" />
+                            <div className="aspect-video w-full rounded-lg bg-secondary" />
+                        </div>
+
+                        {/* Property Details Card Skeleton */}
+                        <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-5">
+                            <div className="h-5 w-40 bg-secondary rounded border-b border-secondary pb-3" />
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                                {[1, 2, 3, 4].map((i) => (
+                                    <div key={i} className="h-16 bg-secondary rounded-lg" />
+                                ))}
+                            </div>
+                            <div className="space-y-2">
+                                <div className="h-4 w-24 bg-secondary rounded" />
+                                <div className="h-4 w-full bg-secondary rounded" />
+                                <div className="h-4 w-full bg-secondary rounded" />
+                                <div className="h-4 w-3/4 bg-secondary rounded" />
+                            </div>
+                        </div>
+
+                        {/* Tenancy Status Card Skeleton */}
+                        <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-5">
+                            <div className="h-5 w-36 bg-secondary rounded border-b border-secondary pb-3" />
+                            <div className="h-6 w-48 bg-secondary rounded" />
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                {[1, 2, 3, 4, 5, 6].map((i) => (
+                                    <div key={i} className="h-10 bg-secondary rounded" />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Financial Info & Side Info (Right Column) */}
+                    <div className="space-y-6">
+                        {/* Financial Summary Card Skeleton */}
+                        <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-5">
+                            <div className="h-4 w-24 bg-secondary rounded border-b border-secondary pb-3" />
+                            <div className="space-y-4">
+                                <div className="space-y-1">
+                                    <div className="h-3 w-20 bg-secondary rounded" />
+                                    <div className="h-7 w-40 bg-secondary rounded" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <div className="h-3 w-20 bg-secondary rounded" />
+                                        <div className="h-5 w-24 bg-secondary rounded" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="h-3 w-20 bg-secondary rounded" />
+                                        <div className="h-5 w-24 bg-secondary rounded" />
+                                    </div>
+                                </div>
+                                <div className="h-12 bg-secondary rounded-lg" />
+                            </div>
+                        </div>
+
+                        {/* Additional Listing Metadata Skeleton */}
+                        <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-5">
+                            <div className="h-4 w-48 bg-secondary rounded border-b border-secondary pb-3" />
+                            <div className="space-y-4">
+                                {[1, 2, 3, 4, 5, 6].map((i) => (
+                                    <div key={i} className="flex justify-between items-center py-1 border-b border-secondary last:border-0">
+                                        <div className="h-4 w-32 bg-secondary rounded" />
+                                        <div className="h-4 w-16 bg-secondary rounded" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Posted By Card Skeleton */}
+                        <div className="rounded-xl border border-secondary bg-primary p-5 shadow-xs space-y-4">
+                            <div className="h-4 w-24 bg-secondary rounded border-b border-secondary pb-3" />
+                            <div className="space-y-4">
+                                <div className="space-y-1">
+                                    <div className="h-3 w-16 bg-secondary rounded" />
+                                    <div className="h-4 w-32 bg-secondary rounded" />
+                                </div>
+                                <div className="space-y-1">
+                                    <div className="h-3 w-24 bg-secondary rounded" />
+                                    <div className="h-4 w-48 bg-secondary rounded" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
