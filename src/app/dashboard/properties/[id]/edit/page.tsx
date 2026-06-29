@@ -355,17 +355,29 @@ export default function EditPropertyPage() {
             });
 
             if (property.gallery && property.gallery.length > 0) {
-                setImages(property.gallery.map((img: any) => ({ type: "existing", url: img.url, alt: img.alt || "" })));
+                setImages(property.gallery.map((img: any) => ({
+                    type: "existing",
+                    url: typeof img === "string" ? img : img.url || "",
+                    alt: typeof img === "string" ? "" : img.alt || ""
+                })));
             } else if (property.heroImage) {
                 setImages([{ type: "existing", url: property.heroImage, alt: "Cover" }]);
             }
 
             if ((property as any).floorplans?.length > 0) {
-                setFloorplans((property as any).floorplans.map((img: any) => ({ type: "existing", url: img.url, alt: img.alt || "" })));
+                setFloorplans((property as any).floorplans.map((img: any) => ({
+                    type: "existing",
+                    url: typeof img === "string" ? img : img.url || "",
+                    alt: typeof img === "string" ? "" : img.alt || ""
+                })));
             }
 
             if ((property as any).mediaFiles?.length > 0) {
-                setDocFiles((property as any).mediaFiles.map((img: any) => ({ type: "existing", url: img.url, alt: img.alt || "" })));
+                setDocFiles((property as any).mediaFiles.map((img: any) => ({
+                    type: "existing",
+                    url: typeof img === "string" ? img : img.url || "",
+                    alt: typeof img === "string" ? "" : img.alt || ""
+                })));
             }
         }
     }, [property, reset]);

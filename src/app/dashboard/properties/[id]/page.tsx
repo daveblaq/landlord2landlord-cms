@@ -245,8 +245,8 @@ export default function ViewPropertyPage() {
                                                 {property.gallery.map((img: any, idx: number) => (
                                                     <Carousel.Item key={idx} className="overflow-hidden rounded-lg border border-secondary bg-secondary">
                                                         <img
-                                                            src={img.url}
-                                                            alt={img.alt || `Gallery ${idx + 1}`}
+                                                            src={typeof img === "string" ? img : img.url || ""}
+                                                            alt={typeof img === "string" ? `Gallery ${idx + 1}` : img.alt || `Gallery ${idx + 1}`}
                                                             className="size-full object-cover"
                                                         />
                                                     </Carousel.Item>
@@ -273,8 +273,8 @@ export default function ViewPropertyPage() {
                                                         }
                                                     >
                                                         <img
-                                                            src={img.url}
-                                                            alt={img.alt || `Thumbnail ${index + 1}`}
+                                                            src={typeof img === "string" ? img : img.url || ""}
+                                                            alt={typeof img === "string" ? `Thumbnail ${index + 1}` : img.alt || `Thumbnail ${index + 1}`}
                                                             className="size-full object-cover pointer-events-none"
                                                         />
                                                     </Carousel.Indicator>
