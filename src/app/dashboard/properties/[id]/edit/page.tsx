@@ -82,6 +82,29 @@ const propertySchema = yup.object().shape({
         .nullable()
         .transform((v, o) => o === "" ? null : v)
         .optional(),
+    managementFeePercent: yup
+        .number()
+        .typeError("Must be a number")
+        .min(0)
+        .max(30)
+        .nullable()
+        .transform((v, o) => o === "" ? null : v)
+        .optional(),
+    insuranceCostMonthly: yup
+        .number()
+        .typeError("Must be a number")
+        .min(0)
+        .nullable()
+        .transform((v, o) => o === "" ? null : v)
+        .optional(),
+    maintenanceCostPercent: yup
+        .number()
+        .typeError("Must be a number")
+        .min(0)
+        .max(10)
+        .nullable()
+        .transform((v, o) => o === "" ? null : v)
+        .optional(),
     councilTaxBand: yup
         .string()
         .oneOf(["A", "B", "C", "D", "E", "F", "G", "H"])
@@ -266,6 +289,9 @@ export default function EditPropertyPage() {
             leaseYearsRemaining: null,
             serviceCharge: 0,
             groundRent: 0,
+            managementFeePercent: null,
+            insuranceCostMonthly: null,
+            maintenanceCostPercent: null,
             councilTaxBand: null,
             tenented: true,
             tenancyStartDate: "",
@@ -301,6 +327,18 @@ export default function EditPropertyPage() {
     const monthlyRent = watch("monthlyRent") as number;
     const annualRent = monthlyRent > 0 ? monthlyRent * 12 : null;
     const grossYield = annualRent && askingPrice > 0 ? ((annualRent / askingPrice) * 100) : null;
+
+    const mgmtFeePercent = watch("managementFeePercent") as number | null;
+    const insuranceCostMonthly = watch("insuranceCostMonthly") as number | null;
+    const maintenanceCostPercent = watch("maintenanceCostPercent") as number | null;
+    const netYield = (() => {
+        if (!annualRent || !askingPrice || (mgmtFeePercent === null && insuranceCostMonthly === null && maintenanceCostPercent === null)) return null;
+        const annualMgmt = ((mgmtFeePercent ?? 0) / 100) * (monthlyRent ?? 0) * 12;
+        const annualInsurance = (insuranceCostMonthly ?? 0) * 12;
+        const annualMaintenance = ((maintenanceCostPercent ?? 0) / 100) * askingPrice;
+        return ((annualRent - annualMgmt - annualInsurance - annualMaintenance) / askingPrice) * 100;
+    })();
+
     const complianceValues = watch("compliance") as any;
     const docsRecorded = complianceValues
         ? COMPLIANCE_DOCS.filter(d => complianceValues[d.key]?.available).length
@@ -327,6 +365,9 @@ export default function EditPropertyPage() {
                 leaseYearsRemaining: property.investmentMetrics?.leaseYearsRemaining ?? null,
                 serviceCharge: property.serviceCharge || 0,
                 groundRent: property.groundRent || 0,
+                managementFeePercent: (property as any).managementFeePercent ?? null,
+                insuranceCostMonthly: (property as any).insuranceCostMonthly ?? null,
+                maintenanceCostPercent: (property as any).maintenanceCostPercent ?? null,
                 councilTaxBand: (property.councilTaxBand as any) ?? null,
                 tenented: property.tenented ?? true,
                 tenancyStartDate: property.tenancyStartDate ? property.tenancyStartDate.split("T")[0] : "",
@@ -497,6 +538,9 @@ export default function EditPropertyPage() {
                 priceType: formData.priceType || undefined,
                 serviceCharge: isLeasehold ? (formData.serviceCharge ? Number(formData.serviceCharge) : 0) : undefined,
                 groundRent: isLeasehold ? (formData.groundRent ? Number(formData.groundRent) : 0) : undefined,
+                managementFeePercent: formData.managementFeePercent !== null && formData.managementFeePercent !== undefined ? Number(formData.managementFeePercent) : undefined,
+                insuranceCostMonthly: formData.insuranceCostMonthly !== null && formData.insuranceCostMonthly !== undefined ? Number(formData.insuranceCostMonthly) : undefined,
+                maintenanceCostPercent: formData.maintenanceCostPercent !== null && formData.maintenanceCostPercent !== undefined ? Number(formData.maintenanceCostPercent) : undefined,
                 councilTaxBand: formData.councilTaxBand || undefined,
                 tenented: formData.tenented,
                 tenancyStartDate: formData.tenented && formData.tenancyStartDate ? formData.tenancyStartDate : undefined,
@@ -762,6 +806,12 @@ export default function EditPropertyPage() {
                                         <span className="text-xs font-semibold text-brand-700">{grossYield.toFixed(2)}%</span>
                                     </div>
                                 )}
+                                {netYield !== null && (
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs text-tertiary">Net Yield:</span>
+                                        <span className={`text-xs font-semibold ${netYield >= 0 ? "text-success-700" : "text-danger-700"}`}>{netYield.toFixed(2)}%</span>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -822,6 +872,34 @@ export default function EditPropertyPage() {
                                 </div>
                             </div>
                         )}
+
+                        {/* Monthly Running Costs */}
+                        <div className="space-y-4 pt-2">
+                            <p className="text-xs font-medium text-tertiary uppercase tracking-wider">Monthly Running Costs</p>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                <Controller
+                                    name="managementFeePercent"
+                                    control={control}
+                                    render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => (
+                                        <Input {...rest} value={value === null || value === undefined ? "" : String(value)} onChange={(val) => onChange(val === "" ? null : Number(val))} type="number" label="Management Fee (% of rent)" placeholder="e.g. 10" isInvalid={!!error} hint={error?.message} />
+                                    )}
+                                />
+                                <Controller
+                                    name="insuranceCostMonthly"
+                                    control={control}
+                                    render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => (
+                                        <Input {...rest} value={value === null || value === undefined ? "" : String(value)} onChange={(val) => onChange(val === "" ? null : Number(val))} type="number" label="Insurance (£/mo)" placeholder="e.g. 25" isInvalid={!!error} hint={error?.message} />
+                                    )}
+                                />
+                                <Controller
+                                    name="maintenanceCostPercent"
+                                    control={control}
+                                    render={({ field: { value, onChange, ...rest }, fieldState: { error } }) => (
+                                        <Input {...rest} value={value === null || value === undefined ? "" : String(value)} onChange={(val) => onChange(val === "" ? null : Number(val))} type="number" label="Maintenance (% p.a.)" placeholder="e.g. 1" isInvalid={!!error} hint={error?.message} />
+                                    )}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Card 3: Tenancy & Income */}

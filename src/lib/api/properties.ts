@@ -53,6 +53,9 @@ export interface Property {
     priceType?: 'guide-price' | 'fixed-price' | 'offers-over';
     serviceCharge?: number;
     groundRent?: number;
+    managementFeePercent?: number;
+    insuranceCostMonthly?: number;
+    maintenanceCostPercent?: number;
     councilTaxBand?: string;
     tenented: boolean;
     tenancyStartDate?: string;
