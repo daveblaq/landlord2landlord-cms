@@ -24,6 +24,7 @@ import { DatePicker } from "@/components/application/date-picker/date-picker";
 import { parseDate } from "@internationalized/date";
 import { Button } from "@/components/base/buttons/button";
 import { IconNotification } from "@/components/application/notifications/notifications";
+import { searchPlaces, getPlaceDetails, type PlaceSuggestion } from "@/lib/utils/google-places";
 
 const EPC_COLORS = { A: "#008054", B: "#19b459", C: "#8dce46", D: "#ffd500", E: "#fcaa65", F: "#ef8023", G: "#e9153b" };
 
@@ -184,8 +185,8 @@ export default function EditPropertyPage() {
 
     const [isUploading, setIsUploading] = useState(false);
 
-    // LocationIQ
-    const [suggestions, setSuggestions] = useState<any[]>([]);
+    // Google Places autocomplete
+    const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
     const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -200,36 +201,28 @@ export default function EditPropertyPage() {
     const fetchSuggestions = async (query: any) => {
         const queryString = typeof query === "string" ? query : (query?.target?.value ?? "");
         if (!queryString || queryString.trim().length < 3) { setSuggestions([]); return; }
-        const apiKey = process.env.NEXT_PUBLIC_LOCATIONIQ_API_KEY;
-        if (!apiKey || apiKey.includes("YOUR_LOCATIONIQ_API_TOKEN")) return;
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) return;
         try {
-            const res = await fetch(`https://api.locationiq.com/v1/autocomplete.php?key=${apiKey}&q=${encodeURIComponent(queryString)}&limit=5&countrycodes=gb&format=json`);
-            if (res.status === 404) { setSuggestions([]); return; }
-            if (!res.ok) throw new Error(`LocationIQ error: ${res.status}`);
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                const unique = Array.from(new Map(data.map((item: any) => [item.place_id, item])).values());
-                setSuggestions(unique);
-            } else {
-                setSuggestions([]);
-            }
+            const results = await searchPlaces(queryString, apiKey);
+            setSuggestions(results);
         } catch {
             setSuggestions([]);
         }
     };
 
-    const handleSuggestionSelect = (item: any) => {
-        const addressData = item.address || {};
-        const streetParts = [addressData.house_number, addressData.road].filter(Boolean);
-        const city = addressData.city || addressData.town || addressData.village || addressData.suburb || addressData.county || "";
-        const cleanAddress = [streetParts.join(" "), city].filter(Boolean).join(", ") || item.display_name;
-        setValue("address", cleanAddress, { shouldDirty: true, shouldValidate: true });
-        if (city) setValue("location", city, { shouldDirty: true, shouldValidate: true });
-        const postcode = addressData.postcode || "";
-        if (postcode) {
-            const outcode = postcode.trim().split(/\s+/)[0];
+    const handleSuggestionSelect = async (item: PlaceSuggestion) => {
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+        setSuggestions([]);
+        if (!apiKey) return;
+        const resolved = await getPlaceDetails(item.placeId, apiKey);
+        if (!resolved) return;
+        setValue("address", resolved.address || resolved.displayName, { shouldDirty: true, shouldValidate: true });
+        if (resolved.city) setValue("location", resolved.city, { shouldDirty: true, shouldValidate: true });
+        if (resolved.postcode) {
+            const outcode = resolved.postcode.trim().split(/\s+/)[0];
             setValue("postcode", outcode, { shouldDirty: true, shouldValidate: true });
-            lookupEpcRating(postcode, item.display_name).then((res) => {
+            lookupEpcRating(resolved.postcode, resolved.displayName).then((res) => {
                 if (res && (res.rating || res.potentialRating)) {
                     if (res.rating) setValue("epc", res.rating, { shouldDirty: true, shouldValidate: true });
                     if (res.potentialRating) setValue("potentialEpc", res.potentialRating, { shouldDirty: true, shouldValidate: true });
@@ -245,9 +238,8 @@ export default function EditPropertyPage() {
                 }
             });
         }
-        if (item.lat) setValue("latitude", parseFloat(item.lat), { shouldDirty: true });
-        if (item.lon) setValue("longitude", parseFloat(item.lon), { shouldDirty: true });
-        setSuggestions([]);
+        if (resolved.latitude != null) setValue("latitude", resolved.latitude, { shouldDirty: true });
+        if (resolved.longitude != null) setValue("longitude", resolved.longitude, { shouldDirty: true });
     };
 
     const {
@@ -696,8 +688,8 @@ export default function EditPropertyPage() {
                                     {suggestions.length > 0 && (
                                         <div className="absolute left-0 right-0 mt-1 bg-primary border border-secondary shadow-lg z-50 w-full rounded-xl max-h-60 overflow-y-auto divide-y divide-secondary">
                                             {suggestions.map((item, idx) => (
-                                                <button key={`${item.place_id || idx}-${idx}`} type="button" className="w-full text-left px-4 py-3 text-sm text-primary hover:bg-secondary transition-colors duration-150 focus:outline-hidden focus:bg-secondary" onClick={() => handleSuggestionSelect(item)}>
-                                                    {item.display_name}
+                                                <button key={`${item.placeId || idx}-${idx}`} type="button" className="w-full text-left px-4 py-3 text-sm text-primary hover:bg-secondary transition-colors duration-150 focus:outline-hidden focus:bg-secondary" onClick={() => handleSuggestionSelect(item)}>
+                                                    {item.displayName}
                                                 </button>
                                             ))}
                                         </div>
