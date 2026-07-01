@@ -287,9 +287,7 @@ export default function PropertiesPage() {
             const leaseYearsIdx = headers.indexOf("lease years remaining");
             const serviceChargeIdx = headers.indexOf("service charge");
             const groundRentIdx = headers.indexOf("ground rent");
-            const mgmtFeeIdx = headers.indexOf("management fee %");
-            const insuranceIdx = headers.indexOf("insurance (£/mo)");
-            const maintenanceIdx = headers.indexOf("maintenance %");
+            const insuranceIdx = headers.indexOf("insurance (per year)");
             const taxBandIdx = headers.indexOf("council tax band");
             const tenentedIdx = headers.indexOf("tenanted");
             const tenancyStartIdx = headers.indexOf("tenancy start date");
@@ -355,9 +353,7 @@ export default function PropertiesPage() {
                     priceType: priceTypeIdx !== -1 && row[priceTypeIdx] ? row[priceTypeIdx] : null,
                     serviceCharge: serviceChargeIdx !== -1 && row[serviceChargeIdx] ? Number(row[serviceChargeIdx]) : 0,
                     groundRent: groundRentIdx !== -1 && row[groundRentIdx] ? Number(row[groundRentIdx]) : 0,
-                    managementFeePercent: mgmtFeeIdx !== -1 && row[mgmtFeeIdx] ? Number(row[mgmtFeeIdx]) : undefined,
                     insuranceCostMonthly: insuranceIdx !== -1 && row[insuranceIdx] ? Number(row[insuranceIdx]) : undefined,
-                    maintenanceCostPercent: maintenanceIdx !== -1 && row[maintenanceIdx] ? Number(row[maintenanceIdx]) : undefined,
                     councilTaxBand: taxBandIdx !== -1 && row[taxBandIdx] ? row[taxBandIdx] : undefined,
                     tenented: tenentedIdx !== -1 ? parseBool(row[tenentedIdx]) : true,
                     tenancyStartDate: tenancyStartIdx !== -1 && row[tenancyStartIdx] ? row[tenancyStartIdx] : "",
@@ -597,9 +593,7 @@ export default function PropertiesPage() {
     <Cell><Data ss:Type="String">Lease Years Remaining</Data></Cell>
     <Cell><Data ss:Type="String">Service Charge</Data></Cell>
     <Cell><Data ss:Type="String">Ground Rent</Data></Cell>
-    <Cell><Data ss:Type="String">Management Fee %</Data></Cell>
-    <Cell><Data ss:Type="String">Insurance (£/mo)</Data></Cell>
-    <Cell><Data ss:Type="String">Maintenance %</Data></Cell>
+    <Cell><Data ss:Type="String">Insurance (per year)</Data></Cell>
     <Cell><Data ss:Type="String">Council Tax Band</Data></Cell>
     <Cell><Data ss:Type="String">Tenanted</Data></Cell>
     <Cell><Data ss:Type="String">Tenancy Start Date</Data></Cell>
@@ -640,8 +634,6 @@ export default function PropertiesPage() {
     <Cell><Data ss:Type="Number">110</Data></Cell>
     <Cell><Data ss:Type="Number">1200</Data></Cell>
     <Cell><Data ss:Type="Number">150</Data></Cell>
-    <Cell><Data ss:Type="String"></Data></Cell>
-    <Cell><Data ss:Type="String"></Data></Cell>
     <Cell><Data ss:Type="String"></Data></Cell>
     <Cell><Data ss:Type="String">B</Data></Cell>
     <Cell><Data ss:Type="String">yes</Data></Cell>
